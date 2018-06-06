@@ -4,9 +4,12 @@ import ReactDOM from 'react-dom';
 import injectTapEventPlugin from 'react-tap-event-plugin';
 injectTapEventPlugin();
 
-import Workspace from 'brickly/src/workspace';
-
-import { clone, for_each_brick, Brick } from 'brickly/src/brick';
+import {
+  clone,
+  for_each_brick,
+  Brick,
+  Workspace,
+} from 'brickly';
 
 import control from './toolbox/control';
 import data from './toolbox/data';
@@ -14,7 +17,6 @@ import event from './toolbox/event';
 import operator from './toolbox/operator';
 import procedure from './toolbox/procedure';
 
-console.log(Workspace);
 const categories = {
   control,
   data,

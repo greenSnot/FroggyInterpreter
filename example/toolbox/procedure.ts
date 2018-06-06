@@ -1,6 +1,10 @@
-import { Brick, BrickOutput } from '../../src/brick';
-import { atomicButtonAdd, atomicButtonRemove } from '../../src/styles/brick.less';
-import { gen_id } from '../../src/util';
+import {
+  atomicButtonAdd,
+  atomicButtonRemove,
+  gen_id,
+  Brick,
+  BrickOutput,
+} from 'brickly';
 
 const bricks: Brick[] = [
   {
