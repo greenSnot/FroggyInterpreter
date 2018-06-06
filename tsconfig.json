@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "allowSyntheticDefaultImports": true,
+    "noImplicitAny": false,
+    "moduleResolution": "node",
+    "jsx": "react",
+    "paths": {
+      "dickly/*": ["node_modules/dickly/*"]
+    }
+  },
+  "exclude": [
+    "node_modules",
+    "libs"
+  ]
+}
