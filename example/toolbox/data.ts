@@ -1,7 +1,4 @@
-import {
-  Brick,
-  BrickOutput,
-} from 'brickly';
+import { Brick, BrickOutput } from 'froggy';
 
 const bricks: Brick[] = [
   {
@@ -39,29 +36,6 @@ const bricks: Brick[] = [
       },
     }],
     is_root: true,
-  },
-  {
-    type: 'data_variable_declare_local',
-    is_root: true,
-    next: null,
-    inputs: [{
-      type: 'atomic_text',
-      ui: {
-        value: 'declare local variable',
-      },
-    }, {
-      type: 'container',
-      is_static: true,
-      output: BrickOutput.string,
-      inputs: [{
-        type: 'atomic_input_string',
-        output: BrickOutput.string,
-        is_static: true,
-        ui: {
-          value: 'x',
-        },
-      }],
-    }],
   },
   {
     type: 'data_variable_get',
@@ -304,6 +278,29 @@ const bricks: Brick[] = [
       type: 'atomic_text',
       ui: {
         value: 'pop',
+      },
+    }, {
+      type: 'container',
+      is_static: true,
+      output: BrickOutput.string,
+      inputs: [{
+        type: 'atomic_input_string',
+        output: BrickOutput.string,
+        is_static: true,
+        ui: {
+          value: 'x',
+        },
+      }],
+    }],
+  },
+  {
+    type: 'data_variable_declare_local',
+    is_root: true,
+    next: null,
+    inputs: [{
+      type: 'atomic_text',
+      ui: {
+        value: 'declare local variable',
       },
     }, {
       type: 'container',

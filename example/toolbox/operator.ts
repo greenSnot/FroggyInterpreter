@@ -1,7 +1,4 @@
-import {
-  Brick,
-  BrickOutput,
-} from 'brickly';
+import { Brick, BrickOutput } from 'froggy';
 
 const bricks: Brick[] = [
   {

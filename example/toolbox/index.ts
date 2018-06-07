@@ -8,7 +8,7 @@ import {
   clone,
   for_each_brick,
   Brick,
-} from 'brickly';
+} from 'froggy';
 
 const categories = {
   control,
