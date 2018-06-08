@@ -1,4 +1,14 @@
 import { Brick, BrickOutput } from 'froggy';
+import { Interpreter } from 'froggy-interpreter';
+
+const operator_id_to_fn = [
+  (a, b) => a + b,
+  (a, b) => a - b,
+  (a, b) => a * b,
+  (a, b) => a / b,
+  (a, b) => Math.pow(a, b),
+  (a, b) => a % b,
+];
 
 const bricks: {
   [type: string]: {
@@ -38,7 +48,9 @@ const bricks: {
         },
       ],
     },
-    fn: () => {},
+    fn: (interpreter: Interpreter, [a, operator, b]) => {
+      return operator_id_to_fn[operator](a, b);
+    },
   },
   operator_math: {
     brick_def: {
@@ -277,7 +289,7 @@ const atomic_dropdown_menu = {
   },
 };
 export default {
-  bricks: Object.keys(bricks).map(i => bricks[i].brick_def),
+  bricks,
   atomic_button_fns,
   atomic_dropdown_menu,
 };

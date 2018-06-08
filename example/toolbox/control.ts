@@ -5,6 +5,7 @@ import { atomicButtonAdd, atomicButtonRemove } from './styles/button.less';
 const bricks: {
   [type: string]: {
     brick_def: Brick,
+    child_fns?: {[type: string]: Function},
     fn: Function,
   },
 } = {
@@ -64,6 +65,12 @@ const bricks: {
       ],
     },
     fn: () => {},
+    child_fns: {
+      'control_if#end_if': () => {},
+      'control_if#if': () => {},
+      'control_if#else': () => {},
+      'control_if#else_if': () => {},
+    },
   },
   control_wait: {
     brick_def: {
@@ -137,6 +144,10 @@ const bricks: {
       ],
     },
     fn: () => {},
+    child_fns: {
+      'control_repeat_n_times#condition': () => {},
+      'control_repeat_n_times#end_repeat': () => {},
+    },
   },
   contorl_repeat_while: {
     brick_def: {
@@ -212,6 +223,10 @@ const bricks: {
       ],
     },
     fn: () => {},
+    child_fns: {
+      'control_repeat_while#condition': () => {},
+      'control_repeat_while#end_repeat': () => {},
+    },
   },
 };
 
@@ -285,7 +300,7 @@ const atomic_button_fns = {
 };
 const atomic_dropdown_menu = {};
 export default {
-  bricks: Object.keys(bricks).map(i => bricks[i].brick_def),
+  bricks,
   atomic_dropdown_menu,
   atomic_button_fns,
 };

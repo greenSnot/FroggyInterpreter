@@ -7,7 +7,7 @@ injectTapEventPlugin();
 import { Brick, Workspace } from 'froggy';
 import { compile, Interpreter } from 'froggy-interpreter';
 
-import { atomic_button_fns, atomic_dropdown_menu, toolbox } from './toolbox';
+import { atomic_button_fns, atomic_dropdown_menu, bricks_fn, toolbox } from './toolbox';
 
 import './styles/index.less';
 
@@ -34,19 +34,7 @@ const compiled_bricks = compile(root_bricks);
 console.log(compiled_bricks);
 
 window['interpreter'] = new Interpreter(
-  {
-    'event_mouse': (interpreter: Interpreter, [mouse_event]) => {
-      console.log(mouse_event);
-      // interpreter.needs_skip = true;
-    },
-    'data_variable_set': (interpreter: Interpreter, [variable_name, value]) => {
-      console.log(variable_name, value);
-    },
-    'operator_number': (interpreter: Interpreter, [a, operator, b]) => {
-      // console.log(a, operator, b);
-      return a - b;
-    },
-  },
+  bricks_fn,
   {
   },
   compiled_bricks.procedures,

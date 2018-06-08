@@ -126,6 +126,6 @@ const atomic_button_fns = {
   },
 };
 export default {
-  bricks: Object.keys(bricks).map(i => bricks[i].brick_def),
+  bricks,
   atomic_button_fns,
 };

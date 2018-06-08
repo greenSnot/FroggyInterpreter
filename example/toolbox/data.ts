@@ -1,4 +1,5 @@
 import { Brick, BrickOutput } from 'froggy';
+import { Interpreter } from 'froggy-interpreter';
 
 const bricks: {
   [type: string]: {
@@ -113,7 +114,9 @@ const bricks: {
         inputs: [],
       }],
     },
-    fn: () => {},
+    fn: (interpreter: Interpreter, [variable_name, value]) => {
+      console.log(variable_name, value);
+    },
   },
   data_variable_append: {
     brick_def: {
@@ -370,7 +373,7 @@ const atomic_dropdown_menu = {
   },
 };
 export default {
-  bricks: Object.keys(bricks).map(i => bricks[i].brick_def),
+  bricks,
   atomic_dropdown_menu,
   atomic_button_fns,
 };
