@@ -2,201 +2,218 @@ import { gen_id, Brick, BrickOutput } from 'froggy';
 
 import { atomicButtonAdd, atomicButtonRemove } from './styles/button.less';
 
-const bricks: Brick[] = [
-  {
-    id: 'if',
-    type: 'control_if',
-    is_root: true,
-    next: null,
-    parts: [
-      {
-        type: 'control_if#if',
-        is_static: true,
-        next: null,
-        inputs: [
-          {
-            type: 'atomic_text',
-            ui: {
-              value: 'if',
-            },
-          },
-          {
-            type: 'container',
-            output: BrickOutput.boolean,
-            inputs: [],
-          },
-          {
-            type: 'atomic_button',
-            is_static: true,
-            ui: {
-              className: atomicButtonAdd,
-              value: 'control_if_btn_add',
-            },
-          },
-          {
-            type: 'atomic_button',
-            is_static: true,
-            ui: {
-              className: atomicButtonRemove,
-              value: 'control_if_btn_remove',
-            },
-          },
-        ],
-      },
-      {
-        type: 'control_if#end_if',
-        is_static: true,
-        inputs: [
-          {
-            type: 'atomic_text',
-            ui: {
-              value: 'end if',
-            },
-          },
-        ],
-      },
-    ],
+const bricks: {
+  [type: string]: {
+    brick_def: Brick,
+    fn: Function,
   },
-  {
-    type: 'control_wait',
-    is_root: true,
-    next: null,
-    inputs: [
-      {
-        type: 'atomic_text',
-        ui: {
-          value: 'wait',
-        },
-      },
-      {
-        type: 'container',
-        output: BrickOutput.number,
-        inputs: [],
-      },
-      {
-        type: 'atomic_text',
-        ui: {
-          value: 'secs',
-        },
-      },
-    ],
-  },
-  {
-    type: 'contorl_repeat_n_times',
-    is_root: true,
-    next: null,
-    parts: [
-      {
-        type: 'control_repeat_n_times#condition',
-        next: null,
-        is_static: true,
-        inputs: [
-          {
-            type: 'atomic_text',
-            ui: {
-              value: 'repeat',
-            },
-          },
-          {
-            type: 'container',
-            output: BrickOutput.number,
-            inputs: [],
-          },
-          {
-            type: 'atomic_text',
-            ui: {
-              value: 'times',
-            },
-          },
-        ],
-      },
-      {
-        type: 'control_repeat_n_times#end_repeat',
-        is_static: true,
-        inputs: [
-          {
-            type: 'atomic_text',
-            ui: {
-              value: 'end repeat',
-            },
-          },
-        ],
-      },
-    ],
-  },
-  {
-    type: 'contorl_repeat_while',
-    is_root: true,
-    next: null,
-    parts: [
-      {
-        type: 'control_repeat_while#condition',
-        is_static: true,
-        inputs: [
-          {
-            type: 'atomic_text',
-            ui: {
-              value: 'while',
-            },
-          },
-          {
-            type: 'container',
-            output: BrickOutput.boolean,
-            inputs: [{
-              type: 'atomic_boolean',
-              output: BrickOutput.boolean,
-              ui: {
-                value: true,
-                dropdown: 'atomic_boolean_dropdown',
-              },
-            }],
-          },
-        ],
-        next: {
-          type: 'control_wait',
+} = {
+  if: {
+    brick_def: {
+      id: 'if',
+      type: 'control_if',
+      is_root: true,
+      next: null,
+      parts: [
+        {
+          type: 'control_if#if',
+          is_static: true,
           next: null,
           inputs: [
             {
               type: 'atomic_text',
               ui: {
-                value: 'wait',
+                value: 'if',
+              },
+            },
+            {
+              type: 'container',
+              output: BrickOutput.boolean,
+              inputs: [],
+            },
+            {
+              type: 'atomic_button',
+              is_static: true,
+              ui: {
+                className: atomicButtonAdd,
+                value: 'control_if_btn_add',
+              },
+            },
+            {
+              type: 'atomic_button',
+              is_static: true,
+              ui: {
+                className: atomicButtonRemove,
+                value: 'control_if_btn_remove',
+              },
+            },
+          ],
+        },
+        {
+          type: 'control_if#end_if',
+          is_static: true,
+          inputs: [
+            {
+              type: 'atomic_text',
+              ui: {
+                value: 'end if',
+              },
+            },
+          ],
+        },
+      ],
+    },
+    fn: () => {},
+  },
+  control_wait: {
+    brick_def: {
+      type: 'control_wait',
+      is_root: true,
+      next: null,
+      inputs: [
+        {
+          type: 'atomic_text',
+          ui: {
+            value: 'wait',
+          },
+        },
+        {
+          type: 'container',
+          output: BrickOutput.number,
+          inputs: [],
+        },
+        {
+          type: 'atomic_text',
+          ui: {
+            value: 'secs',
+          },
+        },
+      ],
+    },
+    fn: () => {},
+  },
+  contorl_repeat_n_times: {
+    brick_def: {
+      type: 'contorl_repeat_n_times',
+      is_root: true,
+      next: null,
+      parts: [
+        {
+          type: 'control_repeat_n_times#condition',
+          next: null,
+          is_static: true,
+          inputs: [
+            {
+              type: 'atomic_text',
+              ui: {
+                value: 'repeat',
               },
             },
             {
               type: 'container',
               output: BrickOutput.number,
-              inputs: [{
-                type: 'atomic_input_number',
-                output: BrickOutput.number,
-                ui: {
-                  value: 0.16,
-                },
-              }],
+              inputs: [],
             },
             {
               type: 'atomic_text',
               ui: {
-                value: 'secs',
+                value: 'times',
               },
             },
           ],
         },
-      },
-      {
-        type: 'control_repeat_while#end_repeat',
-        is_static: true,
-        inputs: [
-          {
-            type: 'atomic_text',
-            ui: {
-              value: 'end repeat',
+        {
+          type: 'control_repeat_n_times#end_repeat',
+          is_static: true,
+          inputs: [
+            {
+              type: 'atomic_text',
+              ui: {
+                value: 'end repeat',
+              },
             },
-          },
-        ],
-      },
-    ],
+          ],
+        },
+      ],
+    },
+    fn: () => {},
   },
-];
+  contorl_repeat_while: {
+    brick_def: {
+      type: 'contorl_repeat_while',
+      is_root: true,
+      next: null,
+      parts: [
+        {
+          type: 'control_repeat_while#condition',
+          is_static: true,
+          inputs: [
+            {
+              type: 'atomic_text',
+              ui: {
+                value: 'while',
+              },
+            },
+            {
+              type: 'container',
+              output: BrickOutput.boolean,
+              inputs: [{
+                type: 'atomic_boolean',
+                output: BrickOutput.boolean,
+                ui: {
+                  value: true,
+                  dropdown: 'atomic_boolean_dropdown',
+                },
+              }],
+            },
+          ],
+          next: {
+            type: 'control_wait',
+            next: null,
+            inputs: [
+              {
+                type: 'atomic_text',
+                ui: {
+                  value: 'wait',
+                },
+              },
+              {
+                type: 'container',
+                output: BrickOutput.number,
+                inputs: [{
+                  type: 'atomic_input_number',
+                  output: BrickOutput.number,
+                  ui: {
+                    value: 0.16,
+                  },
+                }],
+              },
+              {
+                type: 'atomic_text',
+                ui: {
+                  value: 'secs',
+                },
+              },
+            ],
+          },
+        },
+        {
+          type: 'control_repeat_while#end_repeat',
+          is_static: true,
+          inputs: [
+            {
+              type: 'atomic_text',
+              ui: {
+                value: 'end repeat',
+              },
+            },
+          ],
+        },
+      ],
+    },
+    fn: () => {},
+  },
+};
 
 const atomic_button_fns = {
   control_if_btn_add: (brick_id_to_data, cfg, update) => {
@@ -268,7 +285,7 @@ const atomic_button_fns = {
 };
 const atomic_dropdown_menu = {};
 export default {
-  bricks,
+  bricks: Object.keys(bricks).map(i => bricks[i].brick_def),
   atomic_dropdown_menu,
   atomic_button_fns,
 };

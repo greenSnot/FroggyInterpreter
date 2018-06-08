@@ -1,66 +1,77 @@
 import { gen_id, Brick, BrickOutput } from 'froggy';
 import { atomicButtonAdd, atomicButtonRemove } from './styles/button.less';
 
-const bricks: Brick[] = [
-  {
-    type: 'procedure_def',
-    is_root: true,
-    inputs: [
-      {
-        type: 'atomic_text',
-        ui: {
-          value: 'procedure def',
+const bricks: {
+  [type: string]: {
+    brick_def: Brick,
+    fn: Function,
+  },
+} = {
+  procedure_def: {
+    brick_def: {
+      type: 'procedure_def',
+      is_root: true,
+      inputs: [
+        {
+          type: 'atomic_text',
+          ui: {
+            value: 'procedure def',
+          },
         },
-      },
-      {
-        type: 'container',
-        output: BrickOutput.string,
-        is_static: true,
-        inputs: [{
-          type: 'atomic_input_string',
+        {
+          type: 'container',
           output: BrickOutput.string,
           is_static: true,
+          inputs: [{
+            type: 'atomic_input_string',
+            output: BrickOutput.string,
+            is_static: true,
+            ui: {
+              value: 'boost',
+            },
+          }],
+        },
+        {
+          type: 'atomic_button',
+          is_static: true,
           ui: {
-            value: 'boost',
+            className: atomicButtonAdd,
+            value: 'procedure_add_param',
           },
-        }],
-      },
-      {
-        type: 'atomic_button',
-        is_static: true,
-        ui: {
-          className: atomicButtonAdd,
-          value: 'procedure_add_param',
         },
-      },
-      {
-        type: 'atomic_button',
-        is_static: true,
-        ui: {
-          className: atomicButtonRemove,
-          value: 'procedure_remove_param',
+        {
+          type: 'atomic_button',
+          is_static: true,
+          ui: {
+            className: atomicButtonRemove,
+            value: 'procedure_remove_param',
+          },
         },
-      },
-    ],
-    next: null,
-    ui: {
-      show_hat: true,
-    },
-  },
-  {
-    type: 'procedure_return',
-    inputs: [{
-      type: 'atomic_text',
+      ],
+      next: null,
       ui: {
-        value: 'return',
+        show_hat: true,
       },
-    }, {
-      type: 'container',
-      output: BrickOutput.any,
-      inputs: [],
-    }],
+    },
+    fn: () => {},
   },
-];
+  procedure_return: {
+    brick_def: {
+      type: 'procedure_return',
+      inputs: [{
+        type: 'atomic_text',
+        ui: {
+          value: 'return',
+        },
+      }, {
+        type: 'container',
+        output: BrickOutput.any,
+        inputs: [],
+      }],
+    },
+    fn: () => {},
+  },
+};
 
 const atomic_button_fns = {
   procedure_remove_param: (brick_data, brick, update) => {
@@ -115,6 +126,6 @@ const atomic_button_fns = {
   },
 };
 export default {
-  bricks,
+  bricks: Object.keys(bricks).map(i => bricks[i].brick_def),
   atomic_button_fns,
 };

@@ -1,214 +1,240 @@
 import { Brick, BrickOutput } from 'froggy';
 
-const bricks: Brick[] = [
-  {
-    type: 'operator_number',
-    output: BrickOutput.number,
-    is_root: true,
-    inputs: [
-      {
-        type: 'container',
-        output: BrickOutput.number,
-        inputs: [],
-      },
-      {
-        type: 'container',
-        output: BrickOutput.number,
-        is_static: true,
-        inputs: [{
-          type: 'atomic_dropdown',
+const bricks: {
+  [type: string]: {
+    brick_def: Brick,
+    fn: Function,
+  },
+} = {
+  operator_number: {
+    brick_def: {
+      type: 'operator_number',
+      output: BrickOutput.number,
+      is_root: true,
+      inputs: [
+        {
+          type: 'container',
+          output: BrickOutput.number,
+          inputs: [],
+        },
+        {
+          type: 'container',
           output: BrickOutput.number,
           is_static: true,
-          ui: {
-            value: 1,
-            dropdown: 'operator_number_dropdown',
-          },
-        }],
-      },
-      {
-        type: 'container',
-        output: BrickOutput.number,
-        inputs: [],
-      },
-    ],
+          inputs: [{
+            type: 'atomic_dropdown',
+            output: BrickOutput.number,
+            is_static: true,
+            ui: {
+              value: 1,
+              dropdown: 'operator_number_dropdown',
+            },
+          }],
+        },
+        {
+          type: 'container',
+          output: BrickOutput.number,
+          inputs: [],
+        },
+      ],
+    },
+    fn: () => {},
   },
-  {
-    id: 'math',
-    type: 'operator_math',
-    output: BrickOutput.number,
-    is_root: true,
-    inputs: [
-      {
-        type: 'container',
-        output: BrickOutput.number,
-        is_static: true,
-        inputs: [{
-          type: 'atomic_dropdown',
+  operator_math: {
+    brick_def: {
+      type: 'operator_math',
+      id: 'math',
+      output: BrickOutput.number,
+      is_root: true,
+      inputs: [
+        {
+          type: 'container',
           output: BrickOutput.number,
           is_static: true,
+          inputs: [{
+            type: 'atomic_dropdown',
+            output: BrickOutput.number,
+            is_static: true,
+            ui: {
+              value: 1,
+              dropdown: 'operator_math_dropdown',
+            },
+          }],
+        },
+        {
+          type: 'container',
+          output: BrickOutput.number,
+          inputs: [],
+        },
+      ],
+    },
+    fn: () => {},
+  },
+  operator_random: {
+    brick_def: {
+      type: 'operator_random',
+      output: BrickOutput.number,
+      is_root: true,
+      inputs: [
+        {
+          type: 'atomic_text',
           ui: {
-            value: 1,
-            dropdown: 'operator_math_dropdown',
+            value: 'random from',
           },
-        }],
-      },
-      {
-        type: 'container',
-        output: BrickOutput.number,
-        inputs: [],
-      },
-    ],
+        },
+        {
+          type: 'container',
+          output: BrickOutput.number,
+          inputs: [],
+        },
+        {
+          type: 'atomic_text',
+          ui: {
+            value: 'to',
+          },
+        },
+        {
+          type: 'container',
+          output: BrickOutput.number,
+          inputs: [],
+        },
+      ],
+    },
+    fn: () => {},
   },
-  {
-    type: 'operator_random',
-    output: BrickOutput.number,
-    is_root: true,
-    inputs: [
-      {
-        type: 'atomic_text',
-        ui: {
-          value: 'random from',
+  operator_ternary: {
+    brick_def: {
+      type: 'operator_ternary',
+      output: BrickOutput.any,
+      is_root: true,
+      inputs: [
+        {
+          type: 'atomic_text',
+          ui: {
+            value: 'ternary',
+          },
         },
-      },
-      {
-        type: 'container',
-        output: BrickOutput.number,
-        inputs: [],
-      },
-      {
-        type: 'atomic_text',
-        ui: {
-          value: 'to',
+        {
+          type: 'container',
+          output: BrickOutput.boolean,
+          inputs: [],
         },
-      },
-      {
-        type: 'container',
-        output: BrickOutput.number,
-        inputs: [],
-      },
-    ],
+        {
+          type: 'atomic_text',
+          ui: {
+            value: '?',
+          },
+        },
+        {
+          type: 'container',
+          output: BrickOutput.any,
+          inputs: [],
+        },
+        {
+          type: 'atomic_text',
+          ui: {
+            value: ':',
+          },
+        },
+        {
+          type: 'container',
+          output: BrickOutput.any,
+          inputs: [],
+        },
+      ],
+    },
+    fn: () => {},
   },
-  {
-    type: 'operator_ternary',
-    output: BrickOutput.any,
-    is_root: true,
-    inputs: [
-      {
-        type: 'atomic_text',
-        ui: {
-          value: 'ternary',
+  operator_compare: {
+    brick_def: {
+      type: 'operator_compare',
+      output: BrickOutput.boolean,
+      is_root: true,
+      inputs: [
+        {
+          type: 'container',
+          output: BrickOutput.any,
+          inputs: [],
         },
-      },
-      {
-        type: 'container',
-        output: BrickOutput.boolean,
-        inputs: [],
-      },
-      {
-        type: 'atomic_text',
-        ui: {
-          value: '?',
-        },
-      },
-      {
-        type: 'container',
-        output: BrickOutput.any,
-        inputs: [],
-      },
-      {
-        type: 'atomic_text',
-        ui: {
-          value: ':',
-        },
-      },
-      {
-        type: 'container',
-        output: BrickOutput.any,
-        inputs: [],
-      },
-    ],
-  },
-  {
-    type: 'operator_compare',
-    output: BrickOutput.boolean,
-    is_root: true,
-    inputs: [
-      {
-        type: 'container',
-        output: BrickOutput.any,
-        inputs: [],
-      },
-      {
-        type: 'container',
-        output: BrickOutput.number,
-        is_static: true,
-        inputs: [{
-          type: 'atomic_dropdown',
+        {
+          type: 'container',
           output: BrickOutput.number,
           is_static: true,
-          ui: {
-            value: 1,
-            dropdown: 'operator_compare_dropdown',
-          },
-        }],
-      },
-      {
-        type: 'container',
-        output: BrickOutput.any,
-        inputs: [],
-      },
-    ],
+          inputs: [{
+            type: 'atomic_dropdown',
+            output: BrickOutput.number,
+            is_static: true,
+            ui: {
+              value: 1,
+              dropdown: 'operator_compare_dropdown',
+            },
+          }],
+        },
+        {
+          type: 'container',
+          output: BrickOutput.any,
+          inputs: [],
+        },
+      ],
+    },
+    fn: () => {},
   },
-  {
-    type: 'operator_boolean',
-    output: BrickOutput.any,
-    is_root: true,
-    inputs: [
-      {
-        type: 'container',
-        output: BrickOutput.any,
-        inputs: [],
-      },
-      {
-        type: 'container',
-        output: BrickOutput.number,
-        is_static: true,
-        inputs: [{
-          type: 'atomic_dropdown',
+  operator_boolean: {
+    brick_def: {
+      type: 'operator_boolean',
+      output: BrickOutput.any,
+      is_root: true,
+      inputs: [
+        {
+          type: 'container',
+          output: BrickOutput.any,
+          inputs: [],
+        },
+        {
+          type: 'container',
           output: BrickOutput.number,
           is_static: true,
-          ui: {
-            value: 1,
-            dropdown: 'operator_boolean_dropdown',
-          },
-        }],
-      },
-      {
-        type: 'container',
-        output: BrickOutput.any,
-        inputs: [],
-      },
-    ],
-  },
-  {
-    type: 'operator_not',
-    output: BrickOutput.boolean,
-    is_root: true,
-    inputs: [
-      {
-        type: 'atomic_text',
-        ui: {
-          value: 'not',
+          inputs: [{
+            type: 'atomic_dropdown',
+            output: BrickOutput.number,
+            is_static: true,
+            ui: {
+              value: 1,
+              dropdown: 'operator_boolean_dropdown',
+            },
+          }],
         },
-      },
-      {
-        type: 'container',
-        output: BrickOutput.boolean,
-        inputs: [],
-      },
-    ],
+        {
+          type: 'container',
+          output: BrickOutput.any,
+          inputs: [],
+        },
+      ],
+    },
+    fn: () => {},
   },
-];
+  operator_not: {
+    brick_def: {
+      type: 'operator_not',
+      output: BrickOutput.boolean,
+      is_root: true,
+      inputs: [
+        {
+          type: 'atomic_text',
+          ui: {
+            value: 'not',
+          },
+        },
+        {
+          type: 'container',
+          output: BrickOutput.boolean,
+          inputs: [],
+        },
+      ],
+    },
+    fn: () => {},
+  },
+};
 
 const atomic_button_fns = {};
 const atomic_dropdown_menu = {
@@ -251,7 +277,7 @@ const atomic_dropdown_menu = {
   },
 };
 export default {
-  bricks,
+  bricks: Object.keys(bricks).map(i => bricks[i].brick_def),
   atomic_button_fns,
   atomic_dropdown_menu,
 };
