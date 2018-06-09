@@ -80,7 +80,7 @@ export class Interpreter {
       this.value_stack.pop();
     }
     // TODO
-    this.computed[this.self.id] = this.self.computed || this.fns[this.self.type](this, inputs.map(i => this.computed[i.id]));
+    this.computed[this.self.id] = this.self.computed !== undefined ? this.self.computed : this.fns[this.self.type](this, inputs.map(i => this.computed[i.id]));
     this.do_next();
   }
   step() {
