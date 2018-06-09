@@ -54,7 +54,13 @@ export default (root_bricks: UIBrick[]) => {
       i.procedure_name = i.inputs[0].computed;
       i.params = i.inputs.filter(j => is_param(j)).map(j => j.computed);
       return i;
-    }),
+    }).reduce(
+      (m, j) => {
+        m[j.procedure_name] = j;
+        return m;
+      },
+      {},
+    ),
     root_bricks: roots.filter(i => !is_procedure_def(i)),
   };
 };

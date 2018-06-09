@@ -1,4 +1,5 @@
 import { BrickId, BrickOutput } from 'froggy';
+import { deep_clone } from './util';
 
 enum Status {
   IDLE = 0,
@@ -21,55 +22,41 @@ export type Brick = {
 };
 
 export class Interpreter {
+  private valid_time = 0;
+  private status = Status.IDLE;
+  private skip_on_end = false;
+  private info_stack: any[] = [];
+
   root: Brick;
   self: Brick;
-  status = Status.IDLE;
   stack: Brick[] = [];
-  value_stack: any[] = [];
+  local_variable_stack: {[name: string]: any}[] = [];
+  param_stack: {[name: string]: any}[] = [];
   computed = {};
+  procedures: {[procedure_name: string]: Brick};
   fns = {};
 
   retriggerable = false;
-  valid_time = 0;
-  procedures: {[procedure_name: string]: Brick};
 
-  skip_next_and_parent = false;
   constructor(fns, computed, procedures, root_brick) {
     this.fns = fns;
     this.computed = computed;
     this.procedures = procedures;
     this.root = root_brick;
     this.stack.push(this.root);
-    this.value_stack.push(undefined);
+    this.info_stack.push(undefined);
   }
-  pop() {
+  private pop() {
     if (!this.stack.length && this.retriggerable) {
       this.reset();
     } else {
-      this.value_stack.pop();
+      this.info_stack.pop();
       return this.stack.pop();
     }
   }
-  step_into_procedure(procedure) {
-    // TODO
-    this.stack.push(this.self);
-    this.value_stack.push(undefined);
-    this.self = this.procedures[procedure];
-    this.skip_next_and_parent = true;
-  }
-  step_into_part(part_index) {
-    this.stack.push(this.self);
-    this.value_stack.push(undefined);
-    this.self = this.self.parts[part_index];
-    this.skip_next_and_parent = true;
-  }
-  step_into_parent() {
-    this.self = this.pop();
-    this.skip_next_and_parent = true;
-  }
-  on_end() {
-    if (this.skip_next_and_parent) {
-      this.skip_next_and_parent = false;
+  private on_end() {
+    if (this.skip_on_end) {
+      this.skip_on_end = false;
     } else {
       if (this.self.output) {
         return;
@@ -82,23 +69,65 @@ export class Interpreter {
     }
     this.self && this.do_step();
   }
-  do_step() {
+  private pause() {
+    throw Error('pause');
+  }
+  private do_step() {
     const inputs = this.self.inputs;
     const parts = this.self.parts;
     if (inputs.length) {
       this.stack.push(this.self);
-      this.value_stack.push(undefined);
+      this.info_stack.push(undefined);
       for (const i in inputs) {
         this.self = inputs[i];
         this.do_step();
       }
       this.self = this.stack.pop();
-      this.value_stack.pop();
+      this.info_stack.pop();
     }
     // TODO
     const id = this.self.id;
-    this.computed[id] = this.self.computed !== undefined ? this.self.computed : this.fns[this.self.type](this, inputs.map(i => this.computed[i.id]));
+    this.computed[id] = (
+      this.self.computed !== undefined ?
+      this.self.computed :
+      this.fns[this.self.type](this, inputs.map(i => this.computed[i.id]))
+    );
     this.on_end();
+  }
+  set_stack_info(v) {
+    this.info_stack[this.info_stack.length - 1] = v;
+  }
+  set_parent_stack_info(v) {
+    this.info_stack[this.info_stack.length - 2] = v;
+  }
+  get_stack_info() {
+    return this.info_stack[this.info_stack.length - 1];
+  }
+  get_parent_stack_info() {
+    return this.info_stack[this.info_stack.length - 2];
+  }
+  step_into_procedure(procedure) {
+    this.stack.push(this.self);
+    this.info_stack.push(undefined);
+    this.param_stack.push(this.procedures[procedure].params.reduce(
+      (m, i, index) => {
+        m[i] = deep_clone(this.computed[this.self.inputs[index].id]);
+        return m;
+      },
+      {},
+    ));
+    this.self = this.procedures[procedure];
+    this.skip_on_end = true;
+  }
+  step_into_part(part_index) {
+    this.stack.push(this.self);
+    this.info_stack.push(undefined);
+    this.self = this.self.parts[part_index];
+    this.skip_on_end = true;
+  }
+  step_into_parent() {
+    this.self = this.pop();
+    this.skip_on_end = true;
   }
   step() {
     let just_wake_up = false;
@@ -121,14 +150,15 @@ export class Interpreter {
       }
     } catch (e) {
       if (e.message !== 'pause') {
-        console.log(e);
+        throw e;
       }
     }
   }
   reset() {
     this.stack = [this.root];
+    this.param_stack = [];
     this.status = Status.IDLE;
-    this.value_stack = [undefined];
+    this.info_stack = [undefined];
   }
   break() {
     // TODO
@@ -137,8 +167,5 @@ export class Interpreter {
     this.valid_time = Date.now() + secs * 1000;
     this.status = Status.PENDING;
     this.pause();
-  }
-  pause() {
-    throw Error('pause');
   }
 }

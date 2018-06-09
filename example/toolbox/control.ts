@@ -66,35 +66,34 @@ const bricks: {
       ],
     },
     fn: (interpreter: Interpreter) => {
-      const stack_index = interpreter.value_stack.length - 1;
-      if (interpreter.value_stack[stack_index] === -1) {
+      const value = interpreter.get_stack_info();
+      if (value === -1) {
         return;
-      } else if (interpreter.value_stack[stack_index] === undefined) {
-        interpreter.value_stack[stack_index] = 0;
-      } else if (interpreter.value_stack[stack_index] < interpreter.self.parts.length - 1) {
-        interpreter.value_stack[stack_index]++;
-      } else {
-        return;
+      } else if (value === undefined) {
+        interpreter.set_stack_info(0);
+        interpreter.step_into_part(0);
+      } else if (value < interpreter.self.parts.length - 1) {
+        interpreter.set_stack_info(value + 1);
+        interpreter.step_into_part(value + 1);
       }
-      interpreter.step_into_part(interpreter.value_stack[stack_index]);
     },
     child_fns: {
       'control_if#if': (interpreter: Interpreter, [condition]) => {
         if (!condition) {
           interpreter.step_into_parent();
         } else {
-          interpreter.value_stack[interpreter.value_stack.length - 2] = -1;
+          interpreter.set_parent_stack_info(-1);
         }
       },
       'control_if#else_if': (interpreter: Interpreter, [condition]) => {
         if (!condition) {
           interpreter.step_into_parent();
         } else {
-          interpreter.value_stack[interpreter.value_stack.length - 2] = -1;
+          interpreter.set_parent_stack_info(-1);
         }
       },
       'control_if#else': (interpreter: Interpreter) => {
-        interpreter.value_stack[interpreter.value_stack.length - 2] = -1;
+        interpreter.set_parent_stack_info(-1);
       },
       'control_if#end_if': () => {},
     },
@@ -185,19 +184,19 @@ const bricks: {
       ],
     },
     fn: (interpreter: Interpreter) => {
-      const stack_index = interpreter.value_stack.length - 1;
-      if (interpreter.value_stack[stack_index] === undefined) {
-        interpreter.value_stack[stack_index] = true;
+      const value = interpreter.get_stack_info();
+      if (value === undefined) {
+        interpreter.set_stack_info(true);
         interpreter.step_into_part(0);
-      } else if (interpreter.value_stack[stack_index] > 0) {
+      } else if (value > 0) {
         interpreter.step_into_part(0);
-        interpreter.value_stack[stack_index]--;
+        interpreter.set_stack_info(value - 1);
       }
     },
     child_fns: {
       'control_repeat_n_times#condition': (interpreter: Interpreter, [times]) => {
-        if (interpreter.value_stack[interpreter.value_stack.length - 2] === true) {
-          interpreter.value_stack[interpreter.value_stack.length - 2] = times - 1;
+        if (interpreter.get_parent_stack_info() === true) {
+          interpreter.set_parent_stack_info(times - 1);
           if (times === 0) {
             interpreter.step_into_parent();
           }
@@ -280,17 +279,17 @@ const bricks: {
       ],
     },
     fn: (interpreter: Interpreter) => {
-      const stack_index = interpreter.value_stack.length - 1;
-      if (interpreter.value_stack[stack_index] === undefined) {
-        interpreter.value_stack[stack_index] = true;
+      const value = interpreter.get_stack_info();
+      if (value === undefined) {
+        interpreter.set_stack_info(true);
         interpreter.step_into_part(0);
-      } else if (interpreter.value_stack[stack_index]) {
+      } else if (value) {
         interpreter.step_into_part(0);
       }
     },
     child_fns: {
       'control_repeat_while#condition': (interpreter: Interpreter, [condition]) => {
-        interpreter.value_stack[interpreter.value_stack.length - 2] = condition;
+        interpreter.set_parent_stack_info(condition);
         if (!condition) {
           interpreter.step_into_parent();
         }
