@@ -172,9 +172,22 @@ const bricks: {
         },
       ],
     },
-    fn: () => {},
+    fn: (interpreter: Interpreter) => {
+      const stack_index = interpreter.value_stack.length - 1;
+      if (interpreter.value_stack[stack_index] === undefined) {
+        interpreter.value_stack[stack_index] = true;
+        interpreter.step_into_part = 0;
+      } else if (interpreter.value_stack[stack_index]) {
+        interpreter.step_into_part = 0;
+        interpreter.value_stack[stack_index]--;
+      }
+    },
     child_fns: {
-      'control_repeat_n_times#condition': () => {},
+      'control_repeat_n_times#condition': (interpreter: Interpreter, [times]) => {
+        if (interpreter.value_stack[interpreter.value_stack.length - 2] === true) {
+          interpreter.value_stack[interpreter.value_stack.length - 2] = times;
+        }
+      },
       'control_repeat_n_times#end_repeat': () => {},
     },
   },
