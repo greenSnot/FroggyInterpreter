@@ -244,7 +244,7 @@ const bricks: {
         },
       ],
     },
-    fn: () => {},
+    fn: (i, [value]) => !value,
   },
 };
 

@@ -30,17 +30,48 @@ const bricks: {
     },
     fn: () => {},
   },
-  atomic_dropdown: {
+  sensor_mouse: {
     brick_def: {
-      type: 'atomic_dropdown',
-      output: BrickOutput.number,
+      type: 'sensor_mouse',
+      output: BrickOutput.boolean,
+      inputs: [{
+        type: 'container',
+        output: BrickOutput.number,
+        is_static: true,
+        inputs: [{
+          type: 'atomic_dropdown',
+          output: BrickOutput.number,
+          is_static: true,
+          ui: {
+            value: 2,
+            dropdown: 'sensor_mouse_kinds_dropdown',
+          },
+        }],
+      }, {
+        type: 'atomic_text',
+        ui: {
+          value: 'mouse',
+        },
+      }, {
+        type: 'container',
+        output: BrickOutput.number,
+        is_static: true,
+        inputs: [{
+          type: 'atomic_dropdown',
+          output: BrickOutput.number,
+          is_static: true,
+          ui: {
+            value: 2,
+            dropdown: 'sensor_mouse_status_dropdown',
+          },
+        }],
+      }],
       is_root: true,
-      ui: {
-        value: 2,
-        dropdown: 'sensor_mouse_status_dropdown',
-      },
     },
-    fn: () => { },
+    fn: (interpreter: Interpreter, [mouse, status]) => {
+      const mouse_status = runtime_mgr.get_mouse_status();
+      return mouse_status[mouse === 1 ? 'left' : 'right'] as any === (status === 1 ? MOUSE_STATUS.down : MOUSE_STATUS.up);
+    },
   },
   sensor_key: {
     brick_def: {
@@ -112,7 +143,7 @@ const bricks: {
               is_static: true,
               ui: {
                 value: 2,
-                dropdown: 'sensor_mouse_status_dropdown',
+                dropdown: 'sensor_mouse_all_status_dropdown',
               },
             },
           ],
@@ -200,6 +231,14 @@ const bricks: {
 
 const atomic_button_fns = {};
 const atomic_dropdown_menu = {
+  sensor_mouse_kinds_dropdown: {
+    left: 1,
+    right: 2,
+  },
+  sensor_mouse_status_dropdown: {
+    'up': 1,
+    'down': 2,
+  },
   sensor_key_status_dropdown: {
     'pressed': 1,
     'released': 2,
@@ -208,7 +247,7 @@ const atomic_dropdown_menu = {
     'a': 1,
     // TODO
   },
-  sensor_mouse_status_dropdown: {
+  sensor_mouse_all_status_dropdown: {
     'left mouse up': 1,
     'left mouse down': 2,
     'right mouse up': 3,
