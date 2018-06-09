@@ -264,10 +264,41 @@ const bricks: {
         },
       ],
     },
-    fn: () => {},
+    fn: (interpreter: Interpreter) => {
+      const stack_index = interpreter.value_stack.length - 1;
+      if (interpreter.value_stack[stack_index] === undefined) {
+        interpreter.value_stack[stack_index] = true;
+        interpreter.step_into_part = 0;
+      } else if (interpreter.value_stack[stack_index]) {
+        interpreter.step_into_part = 0;
+      }
+    },
     child_fns: {
-      'control_repeat_while#condition': () => {},
+      'control_repeat_while#condition': (interpreter: Interpreter, [condition]) => {
+        interpreter.value_stack[interpreter.value_stack.length - 2] = condition;
+        if (!condition) {
+          interpreter.needs_skip = true;
+        }
+      },
       'control_repeat_while#end_repeat': () => {},
+    },
+  },
+  contorl_break: {
+    brick_def: {
+      type: 'contorl_break',
+      is_root: true,
+      next: null,
+      inputs: [
+        {
+          type: 'atomic_text',
+          ui: {
+            value: 'break',
+          },
+        },
+      ],
+    },
+    fn: (interpreter: Interpreter) => {
+      interpreter.break();
     },
   },
 };

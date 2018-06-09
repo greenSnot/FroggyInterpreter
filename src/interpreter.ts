@@ -101,6 +101,9 @@ export class Interpreter {
       }
     }
   }
+  break() {
+    // TODO
+  }
   sleep(secs: number) {
     this.valid_time = Date.now() + secs * 1000;
     this.status = Status.PENDING;
