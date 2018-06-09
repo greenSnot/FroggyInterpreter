@@ -27,10 +27,11 @@ export class Interpreter {
   computed = {};
   fns = {};
 
-  needs_skip = false;
+  needs_pop = false;
   needs_abort = false;
   step_into_part = undefined;
 
+  retriggerable = false;
   valid_time = 0;
   constructor(fns, computed, procedures, root_brick) {
     this.fns = fns;
@@ -39,11 +40,18 @@ export class Interpreter {
     this.stack.push(this.root);
     this.value_stack.push(undefined);
   }
-  do_next() {
-    if (this.needs_skip) {
-      this.needs_skip = false;
-      this.self = this.stack.pop();
+  pop() {
+    if (!this.stack.length && this.retriggerable) {
+      this.reset();
+    } else {
       this.value_stack.pop();
+      return this.stack.pop();
+    }
+  }
+  do_next() {
+    if (this.needs_pop) {
+      this.needs_pop = false;
+      this.self = this.pop();
     } else if (this.step_into_part >= 0) {
       this.stack.push(this.self);
       this.value_stack.push(undefined);
@@ -54,8 +62,7 @@ export class Interpreter {
     } else if (this.self.output) {
       return;
     } else {
-      this.self = this.stack.pop();
-      this.value_stack.pop();
+      this.self = this.pop();
     }
     this.self && this.do_step();
   }
@@ -97,9 +104,13 @@ export class Interpreter {
       }
     } catch (e) {
       if (e.message === 'pause') {
-        console.log('pause');
       }
     }
+  }
+  reset() {
+    this.stack = [this.root];
+    this.status = Status.IDLE;
+    this.value_stack = [undefined];
   }
   break() {
     // TODO

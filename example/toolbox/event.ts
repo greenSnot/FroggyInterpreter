@@ -1,5 +1,8 @@
 import { Brick, BrickOutput } from 'froggy';
 import { Interpreter } from 'froggy-interpreter';
+import * as runtime_mgr from '../runtime_mgr';
+
+import { MOUSE_STATUS } from '../runtime_data';
 
 const bricks: {
   [type: string]: {
@@ -120,8 +123,22 @@ const bricks: {
       },
       next: null,
     },
-    fn: (interpreter: Interpreter, [mouse_event]) => {
-      console.log(mouse_event);
+    fn: (interpreter: Interpreter, [mouse_status]) => {
+      interpreter.retriggerable = true;
+      const status = runtime_mgr.get_mouse_status();
+      let res;
+      if (mouse_status === 1) {
+        res = status.left === MOUSE_STATUS.up;
+      } else if (mouse_status === 2) {
+        res = status.left === MOUSE_STATUS.down;
+      } else if (mouse_status === 3) {
+        res = status.right === MOUSE_STATUS.up;
+      } else if (mouse_status === 4) {
+        res = status.right === MOUSE_STATUS.down;
+      }
+      if (!res) {
+        interpreter.needs_pop = true;
+      }
     },
   },
   event_key: {

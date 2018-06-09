@@ -9,6 +9,8 @@ import { compile, Interpreter } from 'froggy-interpreter';
 
 import { atomic_button_fns, atomic_dropdown_menu, bricks_fn, toolbox } from './toolbox';
 
+import * as runtime_mgr from './runtime_mgr';
+
 import './styles/index.less';
 
 const storage_key = 'root_bricks';
@@ -33,10 +35,5 @@ ReactDOM.render(
 const compiled_bricks = compile(root_bricks);
 console.log(compiled_bricks);
 
-window['interpreter'] = new Interpreter(
-  bricks_fn,
-  {
-  },
-  compiled_bricks.procedures,
-  compiled_bricks.root_bricks[0],
-);
+runtime_mgr.init(bricks_fn, compiled_bricks.procedures, compiled_bricks.root_bricks);
+runtime_mgr.start();
