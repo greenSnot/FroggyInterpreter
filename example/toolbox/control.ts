@@ -1,5 +1,6 @@
 import { gen_id, Brick, BrickOutput } from 'froggy';
 
+import { Interpreter } from 'froggy-interpreter';
 import { atomicButtonAdd, atomicButtonRemove } from './styles/button.less';
 
 const bricks: {
@@ -9,10 +10,10 @@ const bricks: {
     fn: Function,
   },
 } = {
-  if: {
+  control_if: {
     brick_def: {
-      id: 'if',
       type: 'control_if',
+      id: 'if',
       is_root: true,
       next: null,
       parts: [
@@ -64,12 +65,38 @@ const bricks: {
         },
       ],
     },
-    fn: () => {},
+    fn: (interpreter: Interpreter) => {
+      const stack_index = interpreter.value_stack.length - 1;
+      if (interpreter.value_stack[stack_index] === -1) {
+        return;
+      } else if (interpreter.value_stack[stack_index] === undefined) {
+        interpreter.value_stack[stack_index] = 0;
+      } else if (interpreter.value_stack[stack_index] < interpreter.self.parts.length - 1) {
+        interpreter.value_stack[stack_index]++;
+      } else {
+        return;
+      }
+      interpreter.step_into_part = interpreter.value_stack[stack_index];
+    },
     child_fns: {
+      'control_if#if': (interpreter: Interpreter, [condition]) => {
+        if (!condition) {
+          interpreter.needs_skip = true;
+        } else {
+          interpreter.value_stack[interpreter.value_stack.length - 2] = -1;
+        }
+      },
+      'control_if#else_if': (interpreter: Interpreter, [condition]) => {
+        if (!condition) {
+          interpreter.needs_skip = true;
+        } else {
+          interpreter.value_stack[interpreter.value_stack.length - 2] = -1;
+        }
+      },
+      'control_if#else': (interpreter: Interpreter) => {
+        interpreter.value_stack[interpreter.value_stack.length - 2] = -1;
+      },
       'control_if#end_if': () => {},
-      'control_if#if': () => {},
-      'control_if#else': () => {},
-      'control_if#else_if': () => {},
     },
   },
   control_wait: {
@@ -97,7 +124,9 @@ const bricks: {
         },
       ],
     },
-    fn: () => {},
+    fn: (interpreter: Interpreter, [secs]) => {
+      interpreter.sleep(secs);
+    },
   },
   contorl_repeat_n_times: {
     brick_def: {
