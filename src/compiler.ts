@@ -27,7 +27,6 @@ export const clean_up = (brick: UIBrick) => {
       id: b.id,
       type: b.type,
       root: b.root,
-      is_root: b.id === brick.id,
       output: b.output,
       parts: b.parts ? b.parts.map(i => do_clean_up(i, undefined, b.id)).filter(i => i) : [],
       inputs: b.inputs ? b.inputs.map(i => do_clean_up(i, undefined, b.id)).filter(i => i) : [],

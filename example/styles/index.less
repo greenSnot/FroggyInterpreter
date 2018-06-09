@@ -5,3 +5,31 @@
     height: 100%;
   }
 }
+
+.btnRun, .btnStop {
+  width: 60px;
+  height: 34px;
+  margin: 0 4px 0 4px;
+  background: #fff;
+  box-sizing: border-box;
+  border-bottom: 5px solid #f1c40f;
+  border-radius: 2px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 30px;
+  right: 30px;
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
+}
+.btnStop {
+  border-color: #ef6868;
+}
+.btnRun:after, .btnStop:after {
+  content: 'run';
+  color: #666;
+  display: inline-block;
+}
+.btnStop:after {
+  content: 'stop';
+}

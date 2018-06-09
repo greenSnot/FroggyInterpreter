@@ -3,6 +3,7 @@ import { Interpreter } from 'froggy-interpreter';
 import * as runtime_mgr from '../runtime_mgr';
 
 import { MOUSE_STATUS } from '../runtime_data';
+import { atomicButtonRun } from './styles/button.less';
 
 const bricks: {
   [type: string]: {
@@ -19,7 +20,19 @@ const bricks: {
         {
           type: 'atomic_text',
           ui: {
-            value: 'when RUN clicked',
+            value: 'when',
+          },
+        },
+        {
+          type: 'atomic_button',
+          ui: {
+            className: atomicButtonRun,
+          },
+        },
+        {
+          type: 'atomic_text',
+          ui: {
+            value: 'clicked',
           },
         },
       ],
@@ -229,7 +242,9 @@ const bricks: {
   },
 };
 
-const atomic_button_fns = {};
+const atomic_button_fns = {
+  undefined: () => {},
+};
 const atomic_dropdown_menu = {
   sensor_mouse_kinds_dropdown: {
     left: 1,

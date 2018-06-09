@@ -8,7 +8,6 @@ export type Brick = {
   id: BrickId,
   type: string,
   root: BrickId,
-  is_root: boolean,
   output: BrickOutput,
   parts: Brick[],
   inputs: Brick[],
