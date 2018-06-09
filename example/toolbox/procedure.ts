@@ -1,9 +1,12 @@
 import { gen_id, Brick, BrickOutput } from 'froggy';
 import { atomicButtonAdd, atomicButtonRemove } from './styles/button.less';
 
+import { Interpreter } from 'froggy-interpreter';
+
 const bricks: {
   [type: string]: {
     brick_def: Brick,
+    child_fns?: {[type: string]: Function},
     fn: Function,
   },
 } = {
@@ -54,6 +57,11 @@ const bricks: {
       },
     },
     fn: () => {},
+    child_fns: {
+      procedure: (interpreter: Interpreter, [...args]) => {
+        console.log(args);
+      },
+    },
   },
   procedure_return: {
     brick_def: {

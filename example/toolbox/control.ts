@@ -76,19 +76,19 @@ const bricks: {
       } else {
         return;
       }
-      interpreter.step_into_part = interpreter.value_stack[stack_index];
+      interpreter.step_into_part(interpreter.value_stack[stack_index]);
     },
     child_fns: {
       'control_if#if': (interpreter: Interpreter, [condition]) => {
         if (!condition) {
-          interpreter.needs_pop = true;
+          interpreter.step_into_parent();
         } else {
           interpreter.value_stack[interpreter.value_stack.length - 2] = -1;
         }
       },
       'control_if#else_if': (interpreter: Interpreter, [condition]) => {
         if (!condition) {
-          interpreter.needs_pop = true;
+          interpreter.step_into_parent();
         } else {
           interpreter.value_stack[interpreter.value_stack.length - 2] = -1;
         }
@@ -188,19 +188,19 @@ const bricks: {
       const stack_index = interpreter.value_stack.length - 1;
       if (interpreter.value_stack[stack_index] === undefined) {
         interpreter.value_stack[stack_index] = true;
-        interpreter.step_into_part = 0;
+        interpreter.step_into_part(0);
       } else if (interpreter.value_stack[stack_index] > 0) {
-        interpreter.step_into_part = 0;
+        interpreter.step_into_part(0);
         interpreter.value_stack[stack_index]--;
       }
     },
     child_fns: {
       'control_repeat_n_times#condition': (interpreter: Interpreter, [times]) => {
         if (interpreter.value_stack[interpreter.value_stack.length - 2] === true) {
-          if (times === 0) {
-            interpreter.needs_pop = true;
-          }
           interpreter.value_stack[interpreter.value_stack.length - 2] = times - 1;
+          if (times === 0) {
+            interpreter.step_into_parent();
+          }
         }
       },
       'control_repeat_n_times#end_repeat': () => {},
@@ -283,16 +283,16 @@ const bricks: {
       const stack_index = interpreter.value_stack.length - 1;
       if (interpreter.value_stack[stack_index] === undefined) {
         interpreter.value_stack[stack_index] = true;
-        interpreter.step_into_part = 0;
+        interpreter.step_into_part(0);
       } else if (interpreter.value_stack[stack_index]) {
-        interpreter.step_into_part = 0;
+        interpreter.step_into_part(0);
       }
     },
     child_fns: {
       'control_repeat_while#condition': (interpreter: Interpreter, [condition]) => {
         interpreter.value_stack[interpreter.value_stack.length - 2] = condition;
         if (!condition) {
-          interpreter.needs_pop = true;
+          interpreter.step_into_parent();
         }
       },
       'control_repeat_while#end_repeat': () => {},

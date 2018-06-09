@@ -15,6 +15,9 @@ export type Brick = {
   parent: BrickId,
   next: Brick,
   computed: any,
+
+  params?: string[],
+  procedure_name?: string,
 };
 
 export class Interpreter {
@@ -26,15 +29,15 @@ export class Interpreter {
   computed = {};
   fns = {};
 
-  needs_pop = false;
-  needs_abort = false;
-  step_into_part = undefined;
-
   retriggerable = false;
   valid_time = 0;
+  procedures: {[procedure_name: string]: Brick};
+
+  skip_next_and_parent = false;
   constructor(fns, computed, procedures, root_brick) {
     this.fns = fns;
     this.computed = computed;
+    this.procedures = procedures;
     this.root = root_brick;
     this.stack.push(this.root);
     this.value_stack.push(undefined);
@@ -47,21 +50,35 @@ export class Interpreter {
       return this.stack.pop();
     }
   }
-  do_next() {
-    if (this.needs_pop) {
-      this.needs_pop = false;
-      this.self = this.pop();
-    } else if (this.step_into_part >= 0) {
-      this.stack.push(this.self);
-      this.value_stack.push(undefined);
-      this.self = this.self.parts[this.step_into_part];
-      this.step_into_part = undefined;
-    } else if (this.self.next) {
-      this.self = this.self.next;
-    } else if (this.self.output) {
-      return;
+  step_into_procedure(procedure) {
+    // TODO
+    this.stack.push(this.self);
+    this.value_stack.push(undefined);
+    this.self = this.procedures[procedure];
+    this.skip_next_and_parent = true;
+  }
+  step_into_part(part_index) {
+    this.stack.push(this.self);
+    this.value_stack.push(undefined);
+    this.self = this.self.parts[part_index];
+    this.skip_next_and_parent = true;
+  }
+  step_into_parent() {
+    this.self = this.pop();
+    this.skip_next_and_parent = true;
+  }
+  on_end() {
+    if (this.skip_next_and_parent) {
+      this.skip_next_and_parent = false;
     } else {
-      this.self = this.pop();
+      if (this.self.output) {
+        return;
+      }
+      if (this.self.next) {
+        this.self = this.self.next;
+      } else {
+        this.self = this.pop();
+      }
     }
     this.self && this.do_step();
   }
@@ -79,8 +96,9 @@ export class Interpreter {
       this.value_stack.pop();
     }
     // TODO
-    this.computed[this.self.id] = this.self.computed !== undefined ? this.self.computed : this.fns[this.self.type](this, inputs.map(i => this.computed[i.id]));
-    this.do_next();
+    const id = this.self.id;
+    this.computed[id] = this.self.computed !== undefined ? this.self.computed : this.fns[this.self.type](this, inputs.map(i => this.computed[i.id]));
+    this.on_end();
   }
   step() {
     let just_wake_up = false;
@@ -97,12 +115,13 @@ export class Interpreter {
     }
     try {
       if (just_wake_up) {
-        this.do_next();
+        this.on_end();
       } else {
         this.self && this.do_step();
       }
     } catch (e) {
-      if (e.message === 'pause') {
+      if (e.message !== 'pause') {
+        console.log(e);
       }
     }
   }
