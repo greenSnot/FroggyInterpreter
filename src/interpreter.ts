@@ -12,6 +12,7 @@ export type Brick = {
   output: BrickOutput,
   parts: Brick[],
   inputs: Brick[],
+  breakable: boolean,
   prev: BrickId,
   parent: BrickId,
   next: Brick,
@@ -19,9 +20,14 @@ export type Brick = {
 
   params?: string[],
   procedure_name?: string,
+  is_procedure_def?: string,
+  is_procedure_call?: string,
 };
 
 export class Interpreter {
+  static SIGNAL = {
+    pause: 'pause',
+  };
   static BRICK_STATUS = {
     first_evaluation: {},
     done_evaluation: {},
@@ -54,6 +60,9 @@ export class Interpreter {
     if (!this.stack.length && this.retriggerable) {
       this.reset();
     } else {
+      if (this.self.is_procedure_def) {
+        this.param_stack.pop();
+      }
       this.brick_status_stack.pop();
       return this.stack.pop();
     }
@@ -74,11 +83,10 @@ export class Interpreter {
     this.self && this.do_step();
   }
   private pause() {
-    throw Error('pause');
+    throw Error(Interpreter.SIGNAL.pause);
   }
   private do_step() {
     const inputs = this.self.inputs;
-    const parts = this.self.parts;
     if (inputs.length) {
       if (this.skip_inputs) {
         this.skip_inputs = false;
@@ -153,7 +161,7 @@ export class Interpreter {
         this.self && this.do_step();
       }
     } catch (e) {
-      if (e.message !== 'pause') {
+      if (!Interpreter.SIGNAL[e.message]) {
         throw e;
       }
     }
@@ -165,7 +173,10 @@ export class Interpreter {
     this.brick_status_stack = [Interpreter.BRICK_STATUS.first_evaluation];
   }
   break() {
-    // TODO
+    while (!this.self.breakable) {
+      this.step_into_parent();
+    }
+    this.skip_on_end = false;
   }
   sleep(secs: number) {
     this.valid_time = Date.now() + secs * 1000;

@@ -13,6 +13,7 @@ atomic_button,
 export const clean_up = (brick: UIBrick) => {
   const is_container = (b) => b.type === 'container';
   const is_procedure_call = (b) => b.type === 'procedure';
+  const is_repeat = (b) => b.type === 'control_repeat_n_times' || b.type === 'control_repeat_while';
   const needs_ignore = {
     atomic_button: true,
     atomic_text: true,
@@ -26,6 +27,7 @@ export const clean_up = (brick: UIBrick) => {
     }
     const res: Brick = {
       id: b.id,
+      breakable: is_repeat(b),
       type: b.type,
       root: b.root,
       output: b.output,

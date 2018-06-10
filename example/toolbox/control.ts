@@ -133,9 +133,9 @@ const bricks: {
       interpreter.sleep(secs);
     },
   },
-  contorl_repeat_n_times: {
+  control_repeat_n_times: {
     brick_def: {
-      type: 'contorl_repeat_n_times',
+      type: 'control_repeat_n_times',
       is_root: true,
       next: null,
       parts: [
@@ -205,9 +205,9 @@ const bricks: {
       'control_repeat_n_times#end_repeat': () => {},
     },
   },
-  contorl_repeat_while: {
+  control_repeat_while: {
     brick_def: {
-      type: 'contorl_repeat_while',
+      type: 'control_repeat_while',
       is_root: true,
       next: null,
       parts: [
@@ -296,9 +296,9 @@ const bricks: {
       'control_repeat_while#end_repeat': () => {},
     },
   },
-  contorl_break: {
+  control_break: {
     brick_def: {
-      type: 'contorl_break',
+      type: 'control_break',
       is_root: true,
       next: null,
       inputs: [
