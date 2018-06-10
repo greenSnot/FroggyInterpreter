@@ -29,16 +29,15 @@ export class Interpreter {
   static SIGNAL = {
     pause: 'pause',
   };
-  static BRICK_STATUS = {
-    first_evaluation: {},
-    done_evaluation: {},
-  };
   private valid_time = 0;
   private status = Status.IDLE;
   private skip_on_end = false;
-  private brick_status_stack: any[] = [];
+  private brick_runtime_data_stack: {
+    evaluation_times: number,
+    inputs_result: any[],
+    [name: string]: any,
+  }[] = [];
   private param_stack: {[name: string]: any}[] = [];
-  private inputs_result_stack = [];
 
   procedure_result;
   root: Brick;
@@ -56,7 +55,7 @@ export class Interpreter {
     this.procedures = procedures;
     this.root = root_brick;
     this.stack.push(this.root);
-    this.brick_status_stack.push(Interpreter.BRICK_STATUS.first_evaluation);
+    this.brick_runtime_data_stack.push({ evaluation_times: 0, inputs_result: [] });
   }
   private pop() {
     if (!this.stack.length && this.retriggerable) {
@@ -65,18 +64,46 @@ export class Interpreter {
       if (this.self.is_procedure_def) {
         this.param_stack.pop();
       }
-      this.brick_status_stack.pop();
+      this.brick_runtime_data_stack.pop();
       return this.stack.pop();
     }
   }
-  private on_end() {
+  private pause() {
+    throw Error(Interpreter.SIGNAL.pause);
+  }
+  private step_into_inputs() {
+    const inputs = this.self.inputs;
+    const runtime_data = this.get_brick_runtime_data();
+
+    if (!inputs.length || this.self.is_procedure_def) {
+      return;
+    }
+    if (this.skip_inputs) {
+      this.skip_inputs = false;
+      return;
+    }
+
+    const self = this.self;
+    for (let i = runtime_data.inputs_result.length; i < inputs.length; ++i) {
+      this.stack.push(self);
+      this.brick_runtime_data_stack.push({ evaluation_times: 0, inputs_result: [] });
+      this.self = inputs[i];
+      this.do_step();
+    }
+  }
+  private on_end(result) {
+    if (this.self.output) {
+      const res = this.self.is_procedure_call ? this.procedure_result : result;
+      this.self = this.stack.pop();
+      this.brick_runtime_data_stack.pop();
+      this.get_brick_runtime_data().inputs_result.push(res);
+      return;
+    }
     if (this.skip_on_end) {
       this.skip_on_end = false;
     } else {
-      if (this.self.output) {
-        return;
-      }
       if (this.self.next) {
+        this.brick_runtime_data_stack[this.brick_runtime_data_stack.length - 1] = { evaluation_times: 0, inputs_result: [] };
         this.self = this.self.next;
       } else {
         this.self = this.pop();
@@ -84,49 +111,24 @@ export class Interpreter {
     }
     this.self && this.do_step();
   }
-  private pause() {
-    throw Error(Interpreter.SIGNAL.pause);
-  }
   private do_step() {
-    const inputs = this.self.inputs;
-    let inputs_result = [];
-    if (inputs.length && !this.self.is_procedure_def) {
-      if (this.skip_inputs) {
-        this.skip_inputs = false;
-      } else {
-        this.inputs_result_stack.push([]);
-        this.stack.push(this.self);
-        this.brick_status_stack.push(Interpreter.BRICK_STATUS.first_evaluation);
-        for (const i in inputs) {
-          this.self = inputs[i];
-          this.do_step();
-        }
-        inputs_result = this.inputs_result_stack.pop();
-        this.self = this.stack.pop();
-        this.brick_status_stack.pop();
-      }
-    }
-    const value = (
+    this.step_into_inputs();
+    const result = (
       this.self.is_atomic ?
       this.self.computed :
-      this.fns[this.self.type](this, inputs_result)
+      this.fns[this.self.type](this, this.get_brick_runtime_data().inputs_result)
     );
-    if (this.self.output) {
-      this.inputs_result_stack[this.inputs_result_stack.length - 1].push(value);
-    }
-    this.on_end();
+    this.on_end(result);
   }
-  set_brick_status = (v) => this.brick_status_stack[this.brick_status_stack.length - 1] = v;
-  set_parent_brick_status = (v) => this.brick_status_stack[this.brick_status_stack.length - 2] = v;
-  get_brick_status = () => this.brick_status_stack[this.brick_status_stack.length - 1];
-  get_parent_brick_status = () => this.brick_status_stack[this.brick_status_stack.length - 2];
-  step_into_procedure(procedure) {
+  get_brick_runtime_data = () => this.brick_runtime_data_stack[this.brick_runtime_data_stack.length - 1];
+  get_parent_brick_runtime_data = () => this.brick_runtime_data_stack[this.brick_runtime_data_stack.length - 2];
+  step_into_procedure(procedure, inputs_result) {
     this.procedure_result = undefined;
     this.stack.push(this.self);
-    this.brick_status_stack.push(Interpreter.BRICK_STATUS.first_evaluation);
+    this.brick_runtime_data_stack.push({ evaluation_times: 0, inputs_result: [] });
     this.param_stack.push(this.procedures[procedure].params.reduce(
       (m, i, index) => {
-        m[i] = deep_clone(this.inputs_result_stack[index]);
+        m[i] = deep_clone(inputs_result[index]);
         return m;
       },
       {},
@@ -136,7 +138,7 @@ export class Interpreter {
   }
   step_into_part(part_index) {
     this.stack.push(this.self);
-    this.brick_status_stack.push(Interpreter.BRICK_STATUS.first_evaluation);
+    this.brick_runtime_data_stack.push({ evaluation_times: 0, inputs_result: [] });
     this.self = this.self.parts[part_index];
     this.skip_on_end = true;
   }
@@ -159,7 +161,10 @@ export class Interpreter {
     }
     try {
       if (just_wake_up) {
-        this.on_end();
+        this.on_end(undefined);
+        while (this.self && this.self.output) {
+          this.do_step();
+        }
       } else {
         this.self && this.do_step();
       }
@@ -181,7 +186,7 @@ export class Interpreter {
     this.stack = [this.root];
     this.param_stack = [];
     this.status = Status.IDLE;
-    this.brick_status_stack = [Interpreter.BRICK_STATUS.first_evaluation];
+    this.brick_runtime_data_stack = [{ evaluation_times: 0, inputs_result: [] }];
   }
   break() {
     while (!this.self.breakable) {

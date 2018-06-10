@@ -56,33 +56,28 @@ const bricks: {
         show_hat: true,
       },
     },
-    fn: (interpreter: Interpreter) => {
-      const params = interpreter.get_params();
-      if (interpreter.get_brick_status() === Interpreter.BRICK_STATUS.first_evaluation) {
-        interpreter.set_brick_status(Interpreter.BRICK_STATUS.done_evaluation);
-      } else {
-        interpreter.step_into_parent();
-      }
-    },
+    fn: () => {},
     child_fns: {
-      procedure: (interpreter: Interpreter) => {
-        if (interpreter.get_brick_status() === Interpreter.BRICK_STATUS.first_evaluation) {
-          interpreter.set_brick_status(Interpreter.BRICK_STATUS.done_evaluation);
-          interpreter.step_into_procedure(interpreter.self.procedure_name);
+      procedure: (interpreter: Interpreter, inputs_result) => {
+        const runtime_data = interpreter.get_brick_runtime_data();
+        if (!runtime_data.evaluation_times) {
+          runtime_data.evaluation_times++;
+          interpreter.step_into_procedure(interpreter.self.procedure_name, inputs_result);
         } else {
           return interpreter.procedure_result;
         }
       },
-      procedure_with_output: (interpreter: Interpreter) => {
-        if (interpreter.get_brick_status() === Interpreter.BRICK_STATUS.first_evaluation) {
-          interpreter.set_brick_status(Interpreter.BRICK_STATUS.done_evaluation);
-          interpreter.step_into_procedure(interpreter.self.procedure_name);
+      procedure_with_output: (interpreter: Interpreter, inputs_result) => {
+        const runtime_data = interpreter.get_brick_runtime_data();
+        if (!runtime_data.evaluation_times) {
+          runtime_data.evaluation_times++;
+          interpreter.step_into_procedure(interpreter.self.procedure_name, inputs_result);
         } else {
           return interpreter.procedure_result;
         }
       },
-      atomic_param: (interpreter: Interpreter, [name]) => {
-        return interpreter.get_params()[name];
+      atomic_param: (interpreter: Interpreter) => {
+        return interpreter.get_params()[interpreter.self.computed];
       },
     },
   },
