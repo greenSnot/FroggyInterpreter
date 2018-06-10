@@ -1,5 +1,5 @@
 import { gen_id, AtomicBrickEnum, BrickId, BrickOutput } from 'froggy';
-import { deep_clone } from './util';
+import { deep_clone, get_last_nth, set_last_nth } from './util';
 
 enum Status {
   IDLE = 0,
@@ -25,18 +25,20 @@ export type Brick = {
   is_procedure_call?: boolean,
 };
 
+type BrickRuntimeData = {
+  evaluation_times: number,
+  inputs_result: any[],
+  [name: string]: any,
+};
 export class Interpreter {
   static SIGNAL = {
     pause: 'pause',
   };
+  static get_initial_runtime_data = () => ({ evaluation_times: 0, inputs_result: [] } as BrickRuntimeData);
   private valid_time = 0;
   private status = Status.IDLE;
   private skip_on_end = false;
-  private brick_runtime_data_stack: {
-    evaluation_times: number,
-    inputs_result: any[],
-    [name: string]: any,
-  }[] = [];
+  private brick_runtime_data_stack: BrickRuntimeData[] = [];
   private param_stack: {[name: string]: any}[] = [];
 
   procedure_result;
@@ -54,8 +56,11 @@ export class Interpreter {
     this.fns = fns;
     this.procedures = procedures;
     this.root = root_brick;
-    this.stack.push(this.root);
-    this.brick_runtime_data_stack.push({ evaluation_times: 0, inputs_result: [] });
+    this.push(this.root);
+  }
+  private push(b: Brick = this.self) {
+    this.stack.push(b);
+    this.brick_runtime_data_stack.push(Interpreter.get_initial_runtime_data());
   }
   private pop() {
     if (!this.stack.length && this.retriggerable) {
@@ -85,8 +90,7 @@ export class Interpreter {
 
     const self = this.self;
     for (let i = runtime_data.inputs_result.length; i < inputs.length; ++i) {
-      this.stack.push(self);
-      this.brick_runtime_data_stack.push({ evaluation_times: 0, inputs_result: [] });
+      this.push(self);
       this.self = inputs[i];
       this.do_step();
     }
@@ -103,7 +107,7 @@ export class Interpreter {
       this.skip_on_end = false;
     } else {
       if (this.self.next) {
-        this.brick_runtime_data_stack[this.brick_runtime_data_stack.length - 1] = { evaluation_times: 0, inputs_result: [] };
+        set_last_nth(this.brick_runtime_data_stack, 1, Interpreter.get_initial_runtime_data());
         this.self = this.self.next;
       } else {
         this.self = this.pop();
@@ -120,12 +124,11 @@ export class Interpreter {
     );
     this.on_end(result);
   }
-  get_brick_runtime_data = () => this.brick_runtime_data_stack[this.brick_runtime_data_stack.length - 1];
-  get_parent_brick_runtime_data = () => this.brick_runtime_data_stack[this.brick_runtime_data_stack.length - 2];
+  get_brick_runtime_data = () => get_last_nth(this.brick_runtime_data_stack, 1);
+  get_parent_brick_runtime_data = () => get_last_nth(this.brick_runtime_data_stack, 2);
   step_into_procedure(procedure, inputs_result) {
     this.procedure_result = undefined;
-    this.stack.push(this.self);
-    this.brick_runtime_data_stack.push({ evaluation_times: 0, inputs_result: [] });
+    this.push(this.self);
     this.param_stack.push(this.procedures[procedure].params.reduce(
       (m, i, index) => {
         m[i] = deep_clone(inputs_result[index]);
@@ -137,8 +140,7 @@ export class Interpreter {
     this.skip_on_end = true;
   }
   step_into_part(part_index) {
-    this.stack.push(this.self);
-    this.brick_runtime_data_stack.push({ evaluation_times: 0, inputs_result: [] });
+    this.push(this.self);
     this.self = this.self.parts[part_index];
     this.skip_on_end = true;
   }
@@ -174,7 +176,7 @@ export class Interpreter {
       }
     }
   }
-  get_params = () => this.param_stack[this.param_stack.length - 1];
+  get_params = () => get_last_nth(this.param_stack, 1);
   procedure_return(res) {
     while (!this.self.is_procedure_call) {
       this.step_into_parent();
@@ -183,10 +185,11 @@ export class Interpreter {
     this.skip_on_end = false;
   }
   reset() {
-    this.stack = [this.root];
+    this.stack = [];
     this.param_stack = [];
     this.status = Status.IDLE;
-    this.brick_runtime_data_stack = [{ evaluation_times: 0, inputs_result: [] }];
+    this.brick_runtime_data_stack = [];
+    this.push(this.root);
   }
   break() {
     while (!this.self.breakable) {
