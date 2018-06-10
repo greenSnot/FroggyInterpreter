@@ -22,10 +22,14 @@ export type Brick = {
 };
 
 export class Interpreter {
+  static BRICK_STATUS = {
+    first_evaluation: {},
+    done_evaluation: {},
+  };
   private valid_time = 0;
   private status = Status.IDLE;
   private skip_on_end = false;
-  private info_stack: any[] = [];
+  private brick_status_stack: any[] = [];
 
   root: Brick;
   self: Brick;
@@ -37,6 +41,7 @@ export class Interpreter {
   fns = {};
 
   retriggerable = false;
+  skip_inputs = false;
 
   constructor(fns, computed, procedures, root_brick) {
     this.fns = fns;
@@ -44,13 +49,13 @@ export class Interpreter {
     this.procedures = procedures;
     this.root = root_brick;
     this.stack.push(this.root);
-    this.info_stack.push(undefined);
+    this.brick_status_stack.push(Interpreter.BRICK_STATUS.first_evaluation);
   }
   private pop() {
     if (!this.stack.length && this.retriggerable) {
       this.reset();
     } else {
-      this.info_stack.pop();
+      this.brick_status_stack.pop();
       return this.stack.pop();
     }
   }
@@ -76,14 +81,18 @@ export class Interpreter {
     const inputs = this.self.inputs;
     const parts = this.self.parts;
     if (inputs.length) {
-      this.stack.push(this.self);
-      this.info_stack.push(undefined);
-      for (const i in inputs) {
-        this.self = inputs[i];
-        this.do_step();
+      if (this.skip_inputs) {
+        this.skip_inputs = false;
+      } else {
+        this.stack.push(this.self);
+        this.brick_status_stack.push(Interpreter.BRICK_STATUS.first_evaluation);
+        for (const i in inputs) {
+          this.self = inputs[i];
+          this.do_step();
+        }
+        this.self = this.stack.pop();
+        this.brick_status_stack.pop();
       }
-      this.self = this.stack.pop();
-      this.info_stack.pop();
     }
     // TODO
     const id = this.self.id;
@@ -94,21 +103,13 @@ export class Interpreter {
     );
     this.on_end();
   }
-  set_stack_info(v) {
-    this.info_stack[this.info_stack.length - 1] = v;
-  }
-  set_parent_stack_info(v) {
-    this.info_stack[this.info_stack.length - 2] = v;
-  }
-  get_stack_info() {
-    return this.info_stack[this.info_stack.length - 1];
-  }
-  get_parent_stack_info() {
-    return this.info_stack[this.info_stack.length - 2];
-  }
+  set_brick_status = (v) => this.brick_status_stack[this.brick_status_stack.length - 1] = v;
+  set_parent_brick_status = (v) => this.brick_status_stack[this.brick_status_stack.length - 2] = v;
+  get_brick_status = () => this.brick_status_stack[this.brick_status_stack.length - 1];
+  get_parent_brick_status = () => this.brick_status_stack[this.brick_status_stack.length - 2];
   step_into_procedure(procedure) {
     this.stack.push(this.self);
-    this.info_stack.push(undefined);
+    this.brick_status_stack.push(Interpreter.BRICK_STATUS.first_evaluation);
     this.param_stack.push(this.procedures[procedure].params.reduce(
       (m, i, index) => {
         m[i] = deep_clone(this.computed[this.self.inputs[index].id]);
@@ -121,7 +122,7 @@ export class Interpreter {
   }
   step_into_part(part_index) {
     this.stack.push(this.self);
-    this.info_stack.push(undefined);
+    this.brick_status_stack.push(Interpreter.BRICK_STATUS.first_evaluation);
     this.self = this.self.parts[part_index];
     this.skip_on_end = true;
   }
@@ -158,7 +159,7 @@ export class Interpreter {
     this.stack = [this.root];
     this.param_stack = [];
     this.status = Status.IDLE;
-    this.info_stack = [undefined];
+    this.brick_status_stack = [Interpreter.BRICK_STATUS.first_evaluation];
   }
   break() {
     // TODO

@@ -58,8 +58,8 @@ const bricks: {
     },
     fn: (interpreter: Interpreter) => {
       const params = interpreter.param_stack[interpreter.param_stack.length - 1];
-      if (interpreter.get_stack_info() === undefined) {
-        interpreter.set_stack_info(true);
+      if (interpreter.get_brick_status() === Interpreter.BRICK_STATUS.first_evaluation) {
+        interpreter.set_brick_status(Interpreter.BRICK_STATUS.done_evaluation);
       } else {
         interpreter.param_stack.pop();
         interpreter.step_into_parent();
@@ -67,8 +67,8 @@ const bricks: {
     },
     child_fns: {
       procedure: (interpreter: Interpreter) => {
-        if (interpreter.get_stack_info() === undefined) {
-          interpreter.set_stack_info(true);
+        if (interpreter.get_brick_status() === Interpreter.BRICK_STATUS.first_evaluation) {
+          interpreter.set_brick_status(Interpreter.BRICK_STATUS.done_evaluation);
           interpreter.step_into_procedure(interpreter.self.procedure_name);
         } else {
           interpreter.step_into_parent();

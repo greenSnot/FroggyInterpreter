@@ -66,15 +66,15 @@ const bricks: {
       ],
     },
     fn: (interpreter: Interpreter) => {
-      const value = interpreter.get_stack_info();
-      if (value === -1) {
+      const status = interpreter.get_brick_status();
+      if (status === -1) {
         return;
-      } else if (value === undefined) {
-        interpreter.set_stack_info(0);
+      } else if (status === Interpreter.BRICK_STATUS.first_evaluation) {
+        interpreter.set_brick_status(0);
         interpreter.step_into_part(0);
-      } else if (value < interpreter.self.parts.length - 1) {
-        interpreter.set_stack_info(value + 1);
-        interpreter.step_into_part(value + 1);
+      } else if (status < interpreter.self.parts.length - 1) {
+        interpreter.set_brick_status(status + 1);
+        interpreter.step_into_part(status + 1);
       }
     },
     child_fns: {
@@ -82,18 +82,18 @@ const bricks: {
         if (!condition) {
           interpreter.step_into_parent();
         } else {
-          interpreter.set_parent_stack_info(-1);
+          interpreter.set_parent_brick_status(-1);
         }
       },
       'control_if#else_if': (interpreter: Interpreter, [condition]) => {
         if (!condition) {
           interpreter.step_into_parent();
         } else {
-          interpreter.set_parent_stack_info(-1);
+          interpreter.set_parent_brick_status(-1);
         }
       },
       'control_if#else': (interpreter: Interpreter) => {
-        interpreter.set_parent_stack_info(-1);
+        interpreter.set_parent_brick_status(-1);
       },
       'control_if#end_if': () => {},
     },
@@ -184,19 +184,19 @@ const bricks: {
       ],
     },
     fn: (interpreter: Interpreter) => {
-      const value = interpreter.get_stack_info();
-      if (value === undefined) {
-        interpreter.set_stack_info(true);
+      const status = interpreter.get_brick_status();
+      if (status === Interpreter.BRICK_STATUS.first_evaluation) {
         interpreter.step_into_part(0);
-      } else if (value > 0) {
+      } else if (status > 0) {
+        interpreter.set_brick_status(status - 1);
+        interpreter.skip_inputs = true;
         interpreter.step_into_part(0);
-        interpreter.set_stack_info(value - 1);
       }
     },
     child_fns: {
       'control_repeat_n_times#condition': (interpreter: Interpreter, [times]) => {
-        if (interpreter.get_parent_stack_info() === true) {
-          interpreter.set_parent_stack_info(times - 1);
+        if (interpreter.get_parent_brick_status() === Interpreter.BRICK_STATUS.first_evaluation) {
+          interpreter.set_parent_brick_status(times - 1);
           if (times === 0) {
             interpreter.step_into_parent();
           }
@@ -279,17 +279,16 @@ const bricks: {
       ],
     },
     fn: (interpreter: Interpreter) => {
-      const value = interpreter.get_stack_info();
-      if (value === undefined) {
-        interpreter.set_stack_info(true);
+      const status = interpreter.get_brick_status();
+      if (status === Interpreter.BRICK_STATUS.first_evaluation) {
         interpreter.step_into_part(0);
-      } else if (value) {
+      } else if (status) {
         interpreter.step_into_part(0);
       }
     },
     child_fns: {
       'control_repeat_while#condition': (interpreter: Interpreter, [condition]) => {
-        interpreter.set_parent_stack_info(condition);
+        interpreter.set_parent_brick_status(condition);
         if (!condition) {
           interpreter.step_into_parent();
         }
