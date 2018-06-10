@@ -15,7 +15,7 @@ export function init(bricks_fn, procedures, root_bricks: Brick[]) {
   roots_needing_dispose = [];
   interpreters = {};
   for (let i = 0; i < root_bricks.length; ++i) {
-    interpreters[root_bricks[i].id] = new Interpreter(bricks_fn, {}, procedures, root_bricks[i]);
+    interpreters[root_bricks[i].id] = new Interpreter(bricks_fn, procedures, root_bricks[i]);
   }
 }
 

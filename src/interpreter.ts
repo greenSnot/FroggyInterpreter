@@ -1,4 +1,4 @@
-import { BrickId, BrickOutput } from 'froggy';
+import { gen_id, AtomicBrickEnum, BrickId, BrickOutput } from 'froggy';
 import { deep_clone } from './util';
 
 enum Status {
@@ -30,22 +30,21 @@ export class Interpreter {
   private status = Status.IDLE;
   private skip_on_end = false;
   private brick_status_stack: any[] = [];
+  private computed = [];
 
   root: Brick;
   self: Brick;
   stack: Brick[] = [];
   local_variable_stack: {[name: string]: any}[] = [];
   param_stack: {[name: string]: any}[] = [];
-  computed = {};
   procedures: {[procedure_name: string]: Brick};
   fns = {};
 
   retriggerable = false;
   skip_inputs = false;
 
-  constructor(fns, computed, procedures, root_brick) {
+  constructor(fns, procedures, root_brick) {
     this.fns = fns;
-    this.computed = computed;
     this.procedures = procedures;
     this.root = root_brick;
     this.stack.push(this.root);
@@ -84,6 +83,9 @@ export class Interpreter {
       if (this.skip_inputs) {
         this.skip_inputs = false;
       } else {
+        if (!this.self.output) {
+          this.computed = [];
+        }
         this.stack.push(this.self);
         this.brick_status_stack.push(Interpreter.BRICK_STATUS.first_evaluation);
         for (const i in inputs) {
@@ -94,13 +96,14 @@ export class Interpreter {
         this.brick_status_stack.pop();
       }
     }
-    // TODO
-    const id = this.self.id;
-    this.computed[id] = (
-      this.self.computed !== undefined ?
+    const value = (
+      AtomicBrickEnum[this.self.type] ?
       this.self.computed :
-      this.fns[this.self.type](this, inputs.map(i => this.computed[i.id]))
+      this.fns[this.self.type](this, this.computed)
     );
+    if (this.self.output) {
+      this.computed.push(value);
+    }
     this.on_end();
   }
   set_brick_status = (v) => this.brick_status_stack[this.brick_status_stack.length - 1] = v;
@@ -112,7 +115,7 @@ export class Interpreter {
     this.brick_status_stack.push(Interpreter.BRICK_STATUS.first_evaluation);
     this.param_stack.push(this.procedures[procedure].params.reduce(
       (m, i, index) => {
-        m[i] = deep_clone(this.computed[this.self.inputs[index].id]);
+        m[i] = deep_clone(this.computed[index]);
         return m;
       },
       {},
