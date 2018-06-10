@@ -57,7 +57,7 @@ const bricks: {
       },
     },
     fn: (interpreter: Interpreter) => {
-      const params = interpreter.param_stack[interpreter.param_stack.length - 1];
+      const params = interpreter.get_params();
       if (interpreter.get_brick_status() === Interpreter.BRICK_STATUS.first_evaluation) {
         interpreter.set_brick_status(Interpreter.BRICK_STATUS.done_evaluation);
       } else {

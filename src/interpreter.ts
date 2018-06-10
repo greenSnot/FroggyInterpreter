@@ -36,13 +36,13 @@ export class Interpreter {
   private status = Status.IDLE;
   private skip_on_end = false;
   private brick_status_stack: any[] = [];
+  private param_stack: {[name: string]: any}[] = [];
   private computed = [];
 
   root: Brick;
   self: Brick;
   stack: Brick[] = [];
   local_variable_stack: {[name: string]: any}[] = [];
-  param_stack: {[name: string]: any}[] = [];
   procedures: {[procedure_name: string]: Brick};
   fns = {};
 
@@ -166,6 +166,7 @@ export class Interpreter {
       }
     }
   }
+  get_params = () => this.param_stack[this.param_stack.length - 1];
   reset() {
     this.stack = [this.root];
     this.param_stack = [];
