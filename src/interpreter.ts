@@ -8,6 +8,7 @@ enum Status {
 export type Brick = {
   id: BrickId,
   type: string,
+  is_atomic: boolean,
   root: BrickId,
   output: BrickOutput,
   parts: Brick[],
@@ -20,8 +21,8 @@ export type Brick = {
 
   params?: string[],
   procedure_name?: string,
-  is_procedure_def?: string,
-  is_procedure_call?: string,
+  is_procedure_def?: boolean,
+  is_procedure_call?: boolean,
 };
 
 export class Interpreter {
@@ -37,8 +38,9 @@ export class Interpreter {
   private skip_on_end = false;
   private brick_status_stack: any[] = [];
   private param_stack: {[name: string]: any}[] = [];
-  private computed = [];
+  private inputs_result_stack = [];
 
+  procedure_result;
   root: Brick;
   self: Brick;
   stack: Brick[] = [];
@@ -87,30 +89,30 @@ export class Interpreter {
   }
   private do_step() {
     const inputs = this.self.inputs;
-    if (inputs.length) {
+    let inputs_result = [];
+    if (inputs.length && !this.self.is_procedure_def) {
       if (this.skip_inputs) {
         this.skip_inputs = false;
       } else {
-        if (!this.self.output) {
-          this.computed = [];
-        }
+        this.inputs_result_stack.push([]);
         this.stack.push(this.self);
         this.brick_status_stack.push(Interpreter.BRICK_STATUS.first_evaluation);
         for (const i in inputs) {
           this.self = inputs[i];
           this.do_step();
         }
+        inputs_result = this.inputs_result_stack.pop();
         this.self = this.stack.pop();
         this.brick_status_stack.pop();
       }
     }
     const value = (
-      AtomicBrickEnum[this.self.type] ?
+      this.self.is_atomic ?
       this.self.computed :
-      this.fns[this.self.type](this, this.computed)
+      this.fns[this.self.type](this, inputs_result)
     );
     if (this.self.output) {
-      this.computed.push(value);
+      this.inputs_result_stack[this.inputs_result_stack.length - 1].push(value);
     }
     this.on_end();
   }
@@ -119,11 +121,12 @@ export class Interpreter {
   get_brick_status = () => this.brick_status_stack[this.brick_status_stack.length - 1];
   get_parent_brick_status = () => this.brick_status_stack[this.brick_status_stack.length - 2];
   step_into_procedure(procedure) {
+    this.procedure_result = undefined;
     this.stack.push(this.self);
     this.brick_status_stack.push(Interpreter.BRICK_STATUS.first_evaluation);
     this.param_stack.push(this.procedures[procedure].params.reduce(
       (m, i, index) => {
-        m[i] = deep_clone(this.computed[index]);
+        m[i] = deep_clone(this.inputs_result_stack[index]);
         return m;
       },
       {},
@@ -167,6 +170,13 @@ export class Interpreter {
     }
   }
   get_params = () => this.param_stack[this.param_stack.length - 1];
+  procedure_return(res) {
+    while (!this.self.is_procedure_call) {
+      this.step_into_parent();
+    }
+    this.procedure_result = res;
+    this.skip_on_end = false;
+  }
   reset() {
     this.stack = [this.root];
     this.param_stack = [];

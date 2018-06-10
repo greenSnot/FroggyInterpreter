@@ -69,7 +69,20 @@ const bricks: {
         if (interpreter.get_brick_status() === Interpreter.BRICK_STATUS.first_evaluation) {
           interpreter.set_brick_status(Interpreter.BRICK_STATUS.done_evaluation);
           interpreter.step_into_procedure(interpreter.self.procedure_name);
+        } else {
+          return interpreter.procedure_result;
         }
+      },
+      procedure_with_output: (interpreter: Interpreter) => {
+        if (interpreter.get_brick_status() === Interpreter.BRICK_STATUS.first_evaluation) {
+          interpreter.set_brick_status(Interpreter.BRICK_STATUS.done_evaluation);
+          interpreter.step_into_procedure(interpreter.self.procedure_name);
+        } else {
+          return interpreter.procedure_result;
+        }
+      },
+      atomic_param: (interpreter: Interpreter, [name]) => {
+        return interpreter.get_params()[name];
       },
     },
   },
@@ -87,7 +100,9 @@ const bricks: {
         inputs: [],
       }],
     },
-    fn: () => {},
+    fn: (interpreter: Interpreter, [res]) => {
+      interpreter.procedure_return(res);
+    },
   },
 };
 

@@ -1,33 +1,24 @@
-import { Brick as UIBrick } from 'froggy';
-import { Brick } from './interpreter';
+import { AtomicBrickEnum, Brick as UIBrick } from 'froggy';
+import { Brick as RuntimeBrick } from './interpreter';
 
-/*
-atomic_text = 1,
-atomic_boolean,
-atomic_dropdown,
-atomic_input_string,
-atomic_input_number,
-atomic_param,
-atomic_button,
-*/
+const is_procedure_def = (b) => b.type === 'procedure_def';
 export const clean_up = (brick: UIBrick) => {
   const is_container = (b) => b.type === 'container';
-  const is_procedure_call = (b) => b.type === 'procedure';
+  const is_procedure_call = (b) => b.type === 'procedure' || b.type === 'procedure_with_output';
   const is_repeat = (b) => b.type === 'control_repeat_n_times' || b.type === 'control_repeat_while';
-  const needs_ignore = {
-    atomic_button: true,
-    atomic_text: true,
-  };
+  const is_atmoic = (b) => AtomicBrickEnum[b.type] && AtomicBrickEnum[b.type] as any !== AtomicBrickEnum.atomic_param;
+  const needs_ignore = (b) => AtomicBrickEnum[b.type] as any === AtomicBrickEnum.atomic_button || AtomicBrickEnum[b.type] as any === AtomicBrickEnum.atomic_text;
   const do_clean_up = (b: UIBrick, prev: string, parent = undefined) => {
-    if (needs_ignore[b.type]) {
+    if (needs_ignore(b)) {
       return undefined;
     }
     if (is_container(b)) {
       return do_clean_up(b.inputs[0], undefined, b.ui.parent);
     }
-    const res: Brick = {
+    const res: RuntimeBrick = {
       id: b.id,
       breakable: is_repeat(b),
+      is_atomic: is_atmoic(b),
       type: b.type,
       root: b.root,
       output: b.output,
@@ -37,6 +28,8 @@ export const clean_up = (brick: UIBrick) => {
       parent,
       next: b.next ? do_clean_up(b.next, b.id) : undefined,
       computed: b.ui && b.ui.value,
+      is_procedure_call: is_procedure_call(b),
+      is_procedure_def: is_procedure_def(b),
     };
     if (is_procedure_call(b)) {
       res.procedure_name = b.inputs[0].ui.value;
@@ -48,9 +41,8 @@ export const clean_up = (brick: UIBrick) => {
 };
 
 export default (root_bricks: UIBrick[]) => {
-  const is_procedure_def = (b) => b.type === 'procedure_def';
   const is_param = (b) => b.type === 'atomic_param';
-  const roots: Brick[] = root_bricks.filter(i => i.ui.show_hat).map(i => clean_up(i));
+  const roots: RuntimeBrick[] = root_bricks.filter(i => i.ui.show_hat).map(i => clean_up(i));
   return {
     procedures: roots.filter(i => is_procedure_def(i)).map(i => {
       i.procedure_name = i.inputs[0].computed;
