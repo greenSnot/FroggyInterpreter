@@ -1,13 +1,27 @@
 import { Brick, BrickOutput } from 'froggy';
 import { Interpreter } from 'froggy-interpreter';
 
-const operator_id_to_fn = [
+const num_operator_id_to_fn = [
   (a, b) => a + b,
   (a, b) => a - b,
   (a, b) => a * b,
   (a, b) => a / b,
   (a, b) => Math.pow(a, b),
   (a, b) => a % b,
+];
+const compare_operator_id_to_fn = [
+  (a, b) => a < b,
+  (a, b) => a <= b,
+  (a, b) => a === b,
+  (a, b) => a > b,
+  (a, b) => a >= b,
+];
+const math_operator_id_to_fn = [
+  a => Math.abs(a),
+  a => Math.round(a),
+  a => Math.floor(a),
+  a => Math.ceil(a),
+  a => Math.sqrt(a),
 ];
 
 const bricks: {
@@ -49,7 +63,7 @@ const bricks: {
       ],
     },
     fn: (interpreter: Interpreter, [a, operator, b]) => {
-      return operator_id_to_fn[operator](a, b);
+      return num_operator_id_to_fn[operator](a, b);
     },
   },
   operator_math: {
@@ -80,7 +94,9 @@ const bricks: {
         },
       ],
     },
-    fn: () => {},
+    fn: (interpreter: Interpreter, [operator, a]) => {
+      return math_operator_id_to_fn[operator](a);
+    },
   },
   operator_random: {
     brick_def: {
@@ -155,7 +171,7 @@ const bricks: {
         },
       ],
     },
-    fn: () => {},
+    fn: (i, [a, b, c]) => a ? b : c,
   },
   operator_compare: {
     brick_def: {
@@ -189,7 +205,9 @@ const bricks: {
         },
       ],
     },
-    fn: () => {},
+    fn: (interpreter: Interpreter, [a, operator, b]) => {
+      return compare_operator_id_to_fn[operator](a, b);
+    },
   },
   operator_boolean: {
     brick_def: {

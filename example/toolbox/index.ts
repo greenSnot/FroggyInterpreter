@@ -1,5 +1,6 @@
 import control from './control';
 import data from './data';
+import debug from './debug';
 import event from './event';
 import operator from './operator';
 import procedure from './procedure';
@@ -16,6 +17,7 @@ const categories = {
   event,
   operator,
   procedure,
+  debug,
 };
 const map_child = (j, key) => Object.keys(j).reduce(
   (m, i) => {
