@@ -9,13 +9,10 @@ export type Brick = {
   id: BrickId,
   type: string,
   is_atomic: boolean,
-  root: BrickId,
   output: BrickOutput,
   parts: Brick[],
   inputs: Brick[],
   breakable: boolean,
-  prev: BrickId,
-  parent: BrickId,
   next: Brick,
   computed: any,
 
@@ -113,7 +110,6 @@ export class Interpreter {
         this.self = this.pop();
       }
     }
-    this.self && this.do_step();
   }
   private do_step() {
     this.step_into_inputs();
@@ -164,11 +160,9 @@ export class Interpreter {
     try {
       if (just_wake_up) {
         this.on_end(undefined);
-        while (this.self && this.self.output) {
-          this.do_step();
-        }
-      } else {
-        this.self && this.do_step();
+      }
+      while (this.self) {
+        this.do_step();
       }
     } catch (e) {
       if (!Interpreter.SIGNAL[e.message]) {

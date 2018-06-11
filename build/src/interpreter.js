@@ -80,7 +80,6 @@ export class Interpreter {
                 this.self = this.pop();
             }
         }
-        this.self && this.do_step();
     }
     do_step() {
         this.step_into_inputs();
@@ -125,12 +124,9 @@ export class Interpreter {
         try {
             if (just_wake_up) {
                 this.on_end(undefined);
-                while (this.self && this.self.output) {
-                    this.do_step();
-                }
             }
-            else {
-                this.self && this.do_step();
+            while (this.self) {
+                this.do_step();
             }
         }
         catch (e) {
