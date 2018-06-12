@@ -1,4 +1,4 @@
-import { deep_clone, get_last_nth, set_last_nth } from './util';
+import { get_last_nth, set_last_nth } from './util';
 var Status;
 (function (Status) {
     Status[Status["IDLE"] = 0] = "IDLE";
@@ -88,7 +88,7 @@ export class Interpreter {
         this.procedure_result = undefined;
         this.push_call_stack(this.self);
         this.param_stack.push(this.procedures[procedure].params.reduce((m, i, index) => {
-            m[i] = deep_clone(inputs_result[index]);
+            m[i] = inputs_result[index];
             return m;
         }, {}));
         this.self = this.procedures[procedure];

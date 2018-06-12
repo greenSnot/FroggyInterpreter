@@ -1,5 +1,5 @@
 import { gen_id, AtomicBrickEnum, BrickId, BrickOutput } from 'froggy';
-import { deep_clone, get_last_nth, set_last_nth } from './util';
+import { get_last_nth, set_last_nth } from './util';
 
 enum Status {
   IDLE = 0,
@@ -124,7 +124,7 @@ export class Interpreter {
     this.push_call_stack(this.self);
     this.param_stack.push(this.procedures[procedure].params.reduce(
       (m, i, index) => {
-        m[i] = deep_clone(inputs_result[index]);
+        m[i] = inputs_result[index];
         return m;
       },
       {},
