@@ -3,7 +3,7 @@ export const deep_clone = (a) => {
     return a;
   }
   if (a instanceof Array) {
-    return a.map(i => deep_clone(a));
+    return a.map(i => deep_clone(i));
   } else {
     return Object.keys(a).reduce(
       (m, i) => {
