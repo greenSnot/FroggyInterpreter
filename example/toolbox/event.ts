@@ -267,7 +267,6 @@ const atomic_dropdown_menu = {
   sensor_key_dropdown: (() => {
     const key_ranges = [
       ['a', 'z'],
-      ['A', 'Z'],
       ['0', '9'],
     ];
     function flatten(arr) {
@@ -289,10 +288,16 @@ const atomic_dropdown_menu = {
             .map((j, idx) => String.fromCharCode(idx + i[0].charCodeAt(0)),
         ),
       ),
-    ).concat(['space']);
+    ).concat([
+      'space',
+      'left',
+      'up',
+      'right',
+      'down',
+    ]);
     return keyboard_keys.reduce(
       (m, i) => {
-        m[i] = keycode(i);
+        m[i] = keycode.codes[i];
         return m;
       },
       {},
