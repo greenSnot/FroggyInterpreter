@@ -34,7 +34,7 @@ export function update() {
   }
   for (const i in interpreters) {
     interpreters[i].step();
-    if (!interpreters[i].self && !interpreters[i].stack.length) {
+    if (!interpreters[i].self && !interpreters[i].call_stack.length) {
       dispose_root(i);
     }
   }

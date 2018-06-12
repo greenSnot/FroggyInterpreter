@@ -34,14 +34,14 @@ export class Interpreter {
   static get_initial_runtime_data = () => ({ evaluation_times: 0, inputs_result: [] } as BrickRuntimeData);
   private valid_time = 0;
   private status = Status.IDLE;
-  private skip_on_end = false;
   private brick_runtime_data_stack: BrickRuntimeData[] = [];
   private param_stack: {[name: string]: any}[] = [];
 
+  skip_on_end = false;
   procedure_result;
   root: Brick;
   self: Brick;
-  stack: Brick[] = [];
+  call_stack: Brick[] = [];
   local_variable_stack: {[name: string]: any}[] = [];
   procedures: {[procedure_name: string]: Brick};
   fns = {};
@@ -53,22 +53,18 @@ export class Interpreter {
     this.fns = fns;
     this.procedures = procedures;
     this.root = root_brick;
-    this.push(this.root);
+    this.reset();
   }
-  private push(b: Brick = this.self) {
-    this.stack.push(b);
+  private push_call_stack(b: Brick = this.self) {
+    this.call_stack.push(b);
     this.brick_runtime_data_stack.push(Interpreter.get_initial_runtime_data());
   }
-  private pop() {
-    if (!this.stack.length && this.retriggerable) {
-      this.reset();
-    } else {
-      if (this.self.is_procedure_def) {
-        this.param_stack.pop();
-      }
-      this.brick_runtime_data_stack.pop();
-      return this.stack.pop();
+  private pop_call_stack() {
+    if (this.self.is_procedure_def) {
+      this.param_stack.pop();
     }
+    this.brick_runtime_data_stack.pop();
+    return this.call_stack.pop();
   }
   private pause() {
     throw Error(Interpreter.SIGNAL.pause);
@@ -87,7 +83,7 @@ export class Interpreter {
 
     const self = this.self;
     for (let i = runtime_data.inputs_result.length; i < inputs.length; ++i) {
-      this.push(self);
+      this.push_call_stack(self);
       this.self = inputs[i];
       this.do_step();
     }
@@ -95,7 +91,7 @@ export class Interpreter {
   private on_end(result) {
     if (this.self.output) {
       const res = this.self.is_procedure_call ? this.procedure_result : result;
-      this.self = this.stack.pop();
+      this.self = this.call_stack.pop();
       this.brick_runtime_data_stack.pop();
       this.get_brick_runtime_data().inputs_result.push(res);
       return;
@@ -107,7 +103,7 @@ export class Interpreter {
         set_last_nth(this.brick_runtime_data_stack, 1, Interpreter.get_initial_runtime_data());
         this.self = this.self.next;
       } else {
-        this.self = this.pop();
+        this.self = this.pop_call_stack();
       }
     }
   }
@@ -124,7 +120,7 @@ export class Interpreter {
   get_parent_brick_runtime_data = () => get_last_nth(this.brick_runtime_data_stack, 2);
   step_into_procedure(procedure, inputs_result) {
     this.procedure_result = undefined;
-    this.push(this.self);
+    this.push_call_stack(this.self);
     this.param_stack.push(this.procedures[procedure].params.reduce(
       (m, i, index) => {
         m[i] = deep_clone(inputs_result[index]);
@@ -136,12 +132,12 @@ export class Interpreter {
     this.skip_on_end = true;
   }
   step_into_part(part_index) {
-    this.push(this.self);
+    this.push_call_stack(this.self);
     this.self = this.self.parts[part_index];
     this.skip_on_end = true;
   }
   step_into_parent() {
-    this.self = this.pop();
+    this.self = this.pop_call_stack();
     this.skip_on_end = true;
   }
   step() {
@@ -154,15 +150,15 @@ export class Interpreter {
         just_wake_up = true;
       }
     }
-    if (!this.self) {
-      this.self = this.stack.pop();
-    }
     try {
       if (just_wake_up) {
         this.on_end(undefined);
       }
       while (this.self) {
         this.do_step();
+      }
+      if (!this.call_stack.length && this.retriggerable) {
+        this.reset();
       }
     } catch (e) {
       if (!Interpreter.SIGNAL[e.message]) {
@@ -179,11 +175,11 @@ export class Interpreter {
     this.skip_on_end = false;
   }
   reset() {
-    this.stack = [];
+    this.call_stack = [];
     this.param_stack = [];
     this.status = Status.IDLE;
-    this.brick_runtime_data_stack = [];
-    this.push(this.root);
+    this.self = this.root;
+    this.brick_runtime_data_stack = [Interpreter.get_initial_runtime_data()];
   }
   break() {
     while (!this.self.breakable) {

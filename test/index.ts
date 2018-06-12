@@ -14,6 +14,7 @@ const test_name_to_result = {
   test_condition_repeat: [2, 3, 3, 3, 4, 4, 4, 5, 6, 8],
   test_procedure_params: [3, 3, 3, 3, 3, 3, 30],
   test_procedure_recursion: [125250, 15],
+  test_procedure_recursion_perf: [1],
 };
 
 let outputs = [];

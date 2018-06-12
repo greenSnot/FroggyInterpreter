@@ -181,7 +181,8 @@ const bricks: {
         res = status.right === MOUSE_STATUS.down;
       }
       if (!res) {
-        interpreter.step_into_parent();
+        interpreter.skip_on_end = true;
+        interpreter.sleep(0.01);
       }
     },
   },

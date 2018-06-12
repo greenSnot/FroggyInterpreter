@@ -84,6 +84,7 @@ class Demo extends React.Component<Props, State> {
           'test_condition_repeat',
           'test_procedure_params',
           'test_procedure_recursion',
+          'test_procedure_recursion_perf',
         ].map(i => (
           <option key={i} value={i}>{i}</option>
         ))}
