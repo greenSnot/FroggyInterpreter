@@ -1,5 +1,4 @@
 import { Brick as RuntimeBrick } from './interpreter';
-import { compile } from '../index';
 
 type CompilerOpt = {
   is_procedure_def: (i) => boolean,
