@@ -1,14 +1,16 @@
 {
   "compilerOptions": {
     "target": "es6",
-    "module": "esnext",
+    "module": "commonjs",
     "allowSyntheticDefaultImports": true,
     "noImplicitAny": false,
     "moduleResolution": "node",
     "jsx": "react",
     "baseUrl": ".",
+    "outDir": "build",
     "paths": {
-      "froggy-interpreter": [".."]
+      "froggy-interpreter": [".."],
+      "froggy": ["../example/node_modules/froggy"]
     }
   },
   "exclude": [
