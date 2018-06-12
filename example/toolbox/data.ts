@@ -1,5 +1,6 @@
 import { Brick, BrickOutput } from 'froggy';
 import { Interpreter } from 'froggy-interpreter';
+import * as runtime_mgr from '../runtime_mgr';
 
 const bricks: {
   [type: string]: {
@@ -53,7 +54,7 @@ const bricks: {
       }],
       is_root: true,
     },
-    fn: () => {},
+    fn: () => ([]),
   },
   data_variable_get: {
     brick_def: {
@@ -79,7 +80,13 @@ const bricks: {
         }],
       }],
     },
-    fn: () => { },
+    fn: (i: Interpreter, [name]) => {
+      const local = i.get_local_variable(name);
+      if (local !== undefined) {
+        return local;
+      }
+      return runtime_mgr.get_global_variable(name);
+    },
   },
   data_variable_set: {
     brick_def: {
@@ -115,7 +122,7 @@ const bricks: {
       }],
     },
     fn: (interpreter: Interpreter, [variable_name, value]) => {
-      console.log(variable_name, value);
+      interpreter.set_local_variable(variable_name, value) || runtime_mgr.set_global_variable(variable_name, value);
     },
   },
   data_variable_append: {
@@ -151,7 +158,13 @@ const bricks: {
         }],
       }],
     },
-    fn: () => {},
+    fn: (i: Interpreter, [thing, name]) => {
+      let variable = i.get_local_variable(name);
+      if (variable === undefined) {
+        variable = runtime_mgr.get_global_variable(name);
+      }
+      variable.push(thing);
+    },
   },
   data_variable_get_nth: {
     brick_def: {
@@ -192,7 +205,13 @@ const bricks: {
         }],
       }],
     },
-    fn: () => {},
+    fn: (i: Interpreter, [n, name]) => {
+      let variable = i.get_local_variable(name);
+      if (variable === undefined) {
+        variable = runtime_mgr.get_global_variable(name);
+      }
+      return variable[n];
+    },
   },
   data_variable_remove_nth: {
     brick_def: {
@@ -233,7 +252,13 @@ const bricks: {
         }],
       }],
     },
-    fn: () => {},
+    fn: (i: Interpreter, [n, name]) => {
+      let variable = i.get_local_variable(name);
+      if (variable === undefined) {
+        variable = runtime_mgr.get_global_variable(name);
+      }
+      variable.splice(n, 1);
+    },
   },
   data_variable_set_nth: {
     brick_def: {
@@ -283,7 +308,13 @@ const bricks: {
         inputs: [],
       }],
     },
-    fn: () => {},
+    fn: (i: Interpreter, [n, name, thing]) => {
+      let variable = i.get_local_variable(name);
+      if (variable === undefined) {
+        variable = runtime_mgr.get_global_variable(name);
+      }
+      variable[n] = thing;
+    },
   },
   data_variable_length_of: {
     brick_def: {
@@ -309,7 +340,13 @@ const bricks: {
         }],
       }],
     },
-    fn: () => {},
+    fn: (i: Interpreter, [name]) => {
+      let variable = i.get_local_variable(name);
+      if (variable === undefined) {
+        variable = runtime_mgr.get_global_variable(name);
+      }
+      return variable.length;
+    },
   },
   data_variable_pop: {
     brick_def: {
@@ -335,7 +372,13 @@ const bricks: {
         }],
       }],
     },
-    fn: () => {},
+    fn: (i: Interpreter, [name]) => {
+      let variable = i.get_local_variable(name);
+      if (variable === undefined) {
+        variable = runtime_mgr.get_global_variable(name);
+      }
+      return variable.pop();
+    },
   },
   data_variable_declare_local: {
     brick_def: {
@@ -361,7 +404,9 @@ const bricks: {
         }],
       }],
     },
-    fn: () => {},
+    fn: (i: Interpreter, [name]) => {
+      i.declare_local_variable(name);
+    },
   },
 };
 

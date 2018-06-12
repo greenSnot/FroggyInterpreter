@@ -52,8 +52,11 @@ export function dispose_root(root_id) {
   delete(interpreters[root_id]);
 }
 
-export function get_variable(name: string) {
+export function get_global_variable(name: string) {
   return runtime_data.get_global_variable(name);
+}
+export function set_global_variable(name: string, value) {
+  runtime_data.set_global_variable(name, value);
 }
 
 export function get_key_status(key_code: number) {

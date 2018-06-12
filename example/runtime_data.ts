@@ -85,10 +85,10 @@ export function start() {
   document.addEventListener('mouseup', on_mouse_up, false);
 }
 
-export function get_global_variable(var_name) {
-  return global_variables[var_name];
+export function get_global_variable(variable_name) {
+  return global_variables[variable_name];
 }
 
-export function get_global_variables() {
-  return global_variables;
+export function set_global_variable(variable_name, value) {
+  global_variables[variable_name] = value;
 }

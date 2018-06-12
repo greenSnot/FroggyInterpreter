@@ -57,6 +57,7 @@ export class Interpreter {
   }
   private push_call_stack(b: Brick = this.self) {
     this.call_stack.push(b);
+    this.local_variable_stack.push({});
     this.brick_runtime_data_stack.push(Interpreter.get_initial_runtime_data());
   }
   private pop_call_stack() {
@@ -64,6 +65,7 @@ export class Interpreter {
       this.param_stack.pop();
     }
     this.brick_runtime_data_stack.pop();
+    this.local_variable_stack.pop();
     return this.call_stack.pop();
   }
   private pause() {
@@ -91,8 +93,7 @@ export class Interpreter {
   private on_end(result) {
     if (this.self.output) {
       const res = this.self.is_procedure_call ? this.procedure_result : result;
-      this.self = this.call_stack.pop();
-      this.brick_runtime_data_stack.pop();
+      this.self = this.pop_call_stack();
       this.get_brick_runtime_data().inputs_result.push(res);
       return;
     }
@@ -177,6 +178,7 @@ export class Interpreter {
   reset() {
     this.call_stack = [];
     this.param_stack = [];
+    this.local_variable_stack = [{}];
     this.status = Status.IDLE;
     this.self = this.root;
     this.brick_runtime_data_stack = [Interpreter.get_initial_runtime_data()];
@@ -186,6 +188,39 @@ export class Interpreter {
       this.step_into_parent();
     }
     this.skip_on_end = false;
+  }
+  get_local_variable(name) {
+    let r;
+    for (let t = this.call_stack.length - 1; t >= 0; --t) {
+      r = this.local_variable_stack[t + 1][name];
+      if (r !== undefined) {
+        return r;
+      }
+      if (this.call_stack[t].is_procedure_call) {
+        return;
+      }
+    }
+    return this.local_variable_stack[0][name];
+  }
+  declare_local_variable(name) {
+    get_last_nth(this.local_variable_stack, 1)[name] = null;
+  }
+  set_local_variable(name, value) {
+    let r;
+    for (let t = this.call_stack.length - 1; t >= 0; --t) {
+      r = this.local_variable_stack[t + 1][name];
+      if (r !== undefined) {
+        this.local_variable_stack[t + 1][name] = value;
+        return true;
+      }
+      if (this.call_stack[t].is_procedure_call) {
+        return false;
+      }
+    }
+    if (this.local_variable_stack[0][name] !== undefined) {
+      this.local_variable_stack[0][name] = value;
+      return true;
+    }
   }
   sleep(secs: number) {
     this.valid_time = Date.now() + secs * 1000;
