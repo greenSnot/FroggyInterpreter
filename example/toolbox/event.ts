@@ -7,12 +7,13 @@ import * as runtime_mgr from '../runtime_mgr';
 import { MOUSE_STATUS } from '../runtime_data';
 import { atomicButtonRun } from './styles/button.less';
 
-const match_mouse_status = {
-  1: (status) => status.left === MOUSE_STATUS.up,
-  2: (status) => status.left === MOUSE_STATUS.down,
-  3: (status) => status.right === MOUSE_STATUS.up,
-  4: (status) => status.right === MOUSE_STATUS.down,
-};
+const match_mouse_status = [
+  (status) => {},
+  (status) => status.left === MOUSE_STATUS.up,
+  (status) => status.left === MOUSE_STATUS.down,
+  (status) => status.right === MOUSE_STATUS.up,
+  (status) => status.right === MOUSE_STATUS.down,
+];
 
 const bricks: {
   [type: string]: {

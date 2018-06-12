@@ -23,6 +23,13 @@ const math_operator_id_to_fn = [
   a => Math.ceil(a),
   a => Math.sqrt(a),
 ];
+const boolean_operator_id_to_fn = [
+  (a, b) => a & b,
+  (a, b) => a ^ b,
+  (a, b) => a | b,
+  (a, b) => a << b,
+  (a, b) => a >> b,
+];
 
 const bricks: {
   [type: string]: {
@@ -128,7 +135,7 @@ const bricks: {
         },
       ],
     },
-    fn: () => {},
+    fn: (i, [a, b]) => Math.floor(Math.random() * (b - a + 1)) + a,
   },
   operator_ternary: {
     brick_def: {
@@ -241,7 +248,9 @@ const bricks: {
         },
       ],
     },
-    fn: () => {},
+    fn: (interpreter: Interpreter, [a, operator, b]) => {
+      return boolean_operator_id_to_fn[operator](a, b);
+    },
   },
   operator_not: {
     brick_def: {
