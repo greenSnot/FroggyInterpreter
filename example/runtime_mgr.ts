@@ -65,7 +65,8 @@ export function get_mouse_status() {
 }
 
 export function stop() {
-  console.log('done');
+  const e = new Event('finished');
+  dispatchEvent(e);
   runtime_data.stop();
   cancelAnimationFrame(animation);
 }

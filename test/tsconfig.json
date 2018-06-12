@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "esnext",
+    "allowSyntheticDefaultImports": true,
+    "noImplicitAny": false,
+    "moduleResolution": "node",
+    "jsx": "react",
+    "baseUrl": ".",
+    "paths": {
+      "froggy-interpreter": [".."]
+    }
+  },
+  "exclude": [
+    "!/node_modules/@types",
+    "../node_modules",
+    "../example",
+    "../src/"
+  ]
+}
