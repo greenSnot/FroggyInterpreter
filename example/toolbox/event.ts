@@ -1,9 +1,18 @@
+import * as keycode from 'keycode';
+
 import { Brick, BrickOutput } from 'froggy';
 import { Interpreter } from 'froggy-interpreter';
 import * as runtime_mgr from '../runtime_mgr';
 
 import { MOUSE_STATUS } from '../runtime_data';
 import { atomicButtonRun } from './styles/button.less';
+
+const match_mouse_status = {
+  1: (status) => status.left === MOUSE_STATUS.up,
+  2: (status) => status.left === MOUSE_STATUS.down,
+  3: (status) => status.right === MOUSE_STATUS.up,
+  4: (status) => status.right === MOUSE_STATUS.down,
+};
 
 const bricks: {
   [type: string]: {
@@ -132,7 +141,7 @@ const bricks: {
         },
       ],
     },
-    fn: () => {},
+    fn: (i, [key, key_status]) => runtime_mgr.get_key_status(key) === key_status,
   },
   event_mouse: {
     brick_def: {
@@ -169,18 +178,7 @@ const bricks: {
     },
     fn: (interpreter: Interpreter, [mouse_status]) => {
       interpreter.retriggerable = true;
-      const status = runtime_mgr.get_mouse_status();
-      let res;
-      if (mouse_status === 1) {
-        res = status.left === MOUSE_STATUS.up;
-      } else if (mouse_status === 2) {
-        res = status.left === MOUSE_STATUS.down;
-      } else if (mouse_status === 3) {
-        res = status.right === MOUSE_STATUS.up;
-      } else if (mouse_status === 4) {
-        res = status.right === MOUSE_STATUS.down;
-      }
-      if (!res) {
+      if (!match_mouse_status[mouse_status](runtime_mgr.get_mouse_status())) {
         interpreter.skip_on_end = true;
         interpreter.sleep(0.01);
       }
@@ -208,7 +206,7 @@ const bricks: {
               is_static: true,
               ui: {
                 value: 1,
-                dropdown: 'sensor_key_status_dropdown',
+                dropdown: 'sensor_key_dropdown',
               },
             },
           ],
@@ -239,13 +237,20 @@ const bricks: {
       },
       next: null,
     },
-    fn: () => {},
+    fn: (interpreter: Interpreter, [key, key_status]) => {
+      interpreter.retriggerable = true;
+      if (runtime_mgr.get_key_status(key) !== key_status) {
+        interpreter.skip_on_end = true;
+        interpreter.sleep(0.01);
+      }
+    },
   },
 };
 
 const atomic_button_fns = {
   undefined: () => {},
 };
+
 const atomic_dropdown_menu = {
   sensor_mouse_kinds_dropdown: {
     left: 1,
@@ -259,10 +264,40 @@ const atomic_dropdown_menu = {
     'pressed': 1,
     'released': 2,
   },
-  sensor_key_dropdown: {
-    'a': 1,
-    // TODO
-  },
+  sensor_key_dropdown: (() => {
+    const key_ranges = [
+      ['a', 'z'],
+      ['A', 'Z'],
+      ['0', '9'],
+    ];
+    function flatten(arr) {
+      const res = [];
+      for (let i = 0; i < arr.length; ++i) {
+        if (arr[i].length) { // isArray
+          res.push(...arr[i]);
+        } else {
+          res.push(arr[i]);
+        }
+      }
+      return res;
+    }
+    const keyboard_keys = flatten(
+      key_ranges.map(
+        i => (
+          new Array(i[1].charCodeAt(0) - i[0].charCodeAt(0) + 1) as any)
+            .fill(undefined)
+            .map((j, idx) => String.fromCharCode(idx + i[0].charCodeAt(0)),
+        ),
+      ),
+    ).concat(['space']);
+    return keyboard_keys.reduce(
+      (m, i) => {
+        m[i] = keycode(i);
+        return m;
+      },
+      {},
+    );
+  })(),
   sensor_mouse_all_status_dropdown: {
     'left mouse up': 1,
     'left mouse down': 2,
@@ -270,6 +305,7 @@ const atomic_dropdown_menu = {
     'right mouse down': 4,
   },
 };
+console.log(atomic_dropdown_menu.sensor_key_dropdown);
 export default {
   bricks,
   atomic_button_fns,
