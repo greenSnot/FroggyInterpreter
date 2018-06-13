@@ -33,7 +33,14 @@ const bricks: {
       dispatchEvent(e);
       console.log(v);
     },
-    to_code: (brick, o) => `console.log(${o.brick_to_code(brick.inputs[0])});${o.brick_to_code(brick.next)}`,
+    to_code: (brick, o) => `
+      (($v) => {
+        const $e = new Event('log');
+        $e.data = v;
+        dispatchEvent($e);
+        console.log($v);
+      })(${o.brick_to_code(brick.inputs[0])});
+      ${o.brick_to_code(brick.next)}`,
   },
 };
 

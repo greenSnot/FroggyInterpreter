@@ -1,7 +1,7 @@
 const fs = require('fs');
 const events = require('events');
 const path = require('path');
-import { bricks_fn, toolbox } from '../example/toolbox';
+import { bricks_fn, toolbox, type_to_code } from '../example/toolbox';
 
 import { compile, Interpreter } from 'froggy-interpreter';
 
@@ -15,6 +15,7 @@ const test_name_to_result = {
   test_procedure_params: [3, 3, 3, 3, 3, 3, 30],
   test_procedure_recursion: [125250, 15],
   test_procedure_recursion_perf: [1],
+  test_data_variables: [1, 'string', 1, 3, 1, 'string', 1, 3, undefined],
 };
 
 let outputs = [];
@@ -37,11 +38,17 @@ const run_test = async () => {
     console.log(name);
     outputs = [];
     const res = JSON.parse(fs.readFileSync(`${name}.json`, {encoding: 'utf-8'}));
-    const compiled_bricks = compile(res);
+    const global_variables = {
+      $runtime_mgr: runtime_mgr,
+    };
+    const compiled_bricks = compile(res, {
+      global_variables,
+      type_to_code,
+    });
 
     runtime_mgr.init(bricks_fn, compiled_bricks.procedures, compiled_bricks.root_bricks);
     console.time(name);
-    runtime_mgr.start();
+    runtime_mgr.start(global_variables);
     await new Promise((resolve) => {
       event_emitter.once('finished', () => {
         console.timeEnd(name);
@@ -50,7 +57,11 @@ const run_test = async () => {
     });
     for (let i = 0; i < outputs.length; ++i) {
       if (outputs[i] !== test_name_to_result[name][i]) {
-        throw Error(`fail: ${name}`);
+        if (outputs[i] === undefined && test_name_to_result[name][i] === undefined) {
+        } else {
+          console.log(outputs);
+          throw Error(`fail: ${name}`);
+        }
       }
     }
   }

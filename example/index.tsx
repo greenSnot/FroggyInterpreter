@@ -67,7 +67,7 @@ class Demo extends React.Component<Props, State> {
             console.log(compiled_bricks);
 
             runtime_mgr.init(bricks_fn, compiled_bricks.procedures, compiled_bricks.root_bricks);
-            runtime_mgr.start(() => runtime_mgr.set_global_variables(global_variables));
+            runtime_mgr.start(global_variables);
           } else {
             runtime_mgr.stop();
           }
@@ -91,6 +91,7 @@ class Demo extends React.Component<Props, State> {
           'test_procedure_params',
           'test_procedure_recursion',
           'test_procedure_recursion_perf',
+          'test_data_variables',
         ].map(i => (
           <option key={i} value={i}>{i}</option>
         ))}

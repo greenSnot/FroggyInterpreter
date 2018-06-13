@@ -58,6 +58,7 @@ export const optimize = (procedures) => {
         return;
       }
       visited[b.id] = true;
+      fn(b);
       id_to_data[b.id] = b;
       if (compiler_opt.is_declare_local_variable(b)) {
         const stack = get_last_nth(local_variable_stack, 1);
@@ -103,6 +104,7 @@ export const optimize = (procedures) => {
     optimizer_opt.id_to_is_global_variable = id_to_is_global_variable;
     (new Function('global', `${optimizer_opt.brick_to_code(brick)}`))(optimizer_opt.global_variables);
     brick.optimized_fn = optimizer_opt.global_variables[`$procedure_${brick.procedure_name}`];
+    console.log(brick.optimized_fn);
   });
   return procedures;
 };

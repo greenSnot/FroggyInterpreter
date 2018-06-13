@@ -115,7 +115,7 @@ const bricks: {
               is_static: true,
               output: BrickOutput.number,
               ui: {
-                value: 1,
+                value: 65,
                 dropdown: 'sensor_key_dropdown',
               },
             },
@@ -211,7 +211,7 @@ const bricks: {
               output: BrickOutput.number,
               is_static: true,
               ui: {
-                value: 1,
+                value: 65,
                 dropdown: 'sensor_key_dropdown',
               },
             },

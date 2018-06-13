@@ -52,9 +52,6 @@ export function dispose_root(root_id) {
   delete(interpreters[root_id]);
 }
 
-export function set_global_variables(variables) {
-  runtime_data.set_global_variables(variables);
-}
 export function get_global_variables() {
   return runtime_data.get_global_variables();
 }
@@ -81,8 +78,10 @@ export function stop() {
   cancelAnimationFrame(animation);
 }
 
-export function start(on_runtime_data_ready?) {
+export function start(override_global_variables?) {
   runtime_data.start();
-  on_runtime_data_ready && on_runtime_data_ready();
+  if (override_global_variables) {
+    runtime_data.set_global_variables(override_global_variables);
+  }
   update();
 }
