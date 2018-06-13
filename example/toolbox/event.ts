@@ -97,7 +97,7 @@ const bricks: {
       const mouse_status = runtime_mgr.get_mouse_status();
       return mouse_status[mouse === 1 ? 'left' : 'right'] as any === (status === 1 ? MOUSE_STATUS.down : MOUSE_STATUS.up);
     },
-    to_code: (brick, o) => `(global.$runtime_mgr.get_mouse_status()[${bricks.inputs[0].computed}] === (${bricks.inputs[1].computed} ? 1 : 2))`,
+    to_code: (brick, o) => `(global.$runtime_mgr.get_mouse_status().${brick.inputs[0].computed === 1 ? 'left' : 'right'} === (${brick.inputs[1].computed}))`,
   },
   sensor_key: {
     brick_def: {
@@ -146,7 +146,7 @@ const bricks: {
       ],
     },
     fn: (i, [key, key_status]) => runtime_mgr.get_key_status(key) === key_status,
-    to_code: (brick, o) => `(global.$runtime_mgr.get_key_status(${bricks.inputs[0].computed}) === ${bricks.inputs[1].computed})`,
+    to_code: (brick, o) => `(global.$runtime_mgr.get_key_status(${brick.inputs[0].computed}) === ${brick.inputs[1].computed})`,
   },
   event_mouse: {
     brick_def: {
@@ -264,8 +264,8 @@ const atomic_dropdown_menu = {
     right: 2,
   },
   sensor_mouse_status_dropdown: {
-    'up': 1,
-    'down': 2,
+    'down': 1,
+    'up': 2,
   },
   sensor_key_status_dropdown: {
     'pressed': 1,
@@ -317,7 +317,6 @@ const atomic_dropdown_menu = {
     'right mouse down': 4,
   },
 };
-console.log(atomic_dropdown_menu.sensor_key_dropdown);
 export default {
   bricks,
   atomic_button_fns,

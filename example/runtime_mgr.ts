@@ -70,6 +70,7 @@ export function get_key_status(key_code: number) {
 }
 
 export function get_mouse_status() {
+  console.log(runtime_data.mouse_status);
   return runtime_data.mouse_status;
 }
 

@@ -103,7 +103,6 @@ export const optimize = (procedures) => {
     optimizer_opt.id_to_is_global_variable = id_to_is_global_variable;
     (new Function('global', `${optimizer_opt.brick_to_code(brick)}`))(optimizer_opt.global_variables);
     brick.optimized_fn = optimizer_opt.global_variables[`$procedure_${brick.procedure_name}`];
-    console.log(brick.optimized_fn);
   });
   return procedures;
 };

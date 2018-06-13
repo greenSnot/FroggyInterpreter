@@ -57,7 +57,9 @@ class Demo extends React.Component<Props, State> {
         onClick={() => {
           const running = !this.state.running;
           if (running) {
-            const global_variables = {};
+            const global_variables = {
+              $runtime_mgr: runtime_mgr,
+            };
             const compiled_bricks = compile(this.state.root_bricks, {
               global_variables,
               type_to_code,
