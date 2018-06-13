@@ -114,7 +114,10 @@ const bricks: {
     fn: (interpreter: Interpreter, [operator, a]) => {
       return math_operator_id_to_fn[operator](a);
     },
-    to_code: () => {},
+    to_code: (brick, o) => {
+      const operator_id_to_str = ['abs', 'round', 'floor', 'ceil', 'sqrt'];
+      return `(Math.${operator_id_to_str[brick.inputs[0].computed]}(${o.brick_to_code(brick.inputs[1])}))`;
+    },
   },
   operator_random: {
     brick_def: {
@@ -147,7 +150,11 @@ const bricks: {
       ],
     },
     fn: (i, [a, b]) => Math.floor(Math.random() * (b - a + 1)) + a,
-    to_code: () => {},
+    to_code: (brick, o) => `(() => {
+      let $a = (${o.brick_to_code(brick.inputs[0])});
+      let $b = (${o.brick_to_code(brick.inputs[1])});
+      Math.floor(Math.random() * ($b - $a + 1)) + $a);
+    }()`,
   },
   operator_ternary: {
     brick_def: {
@@ -191,7 +198,7 @@ const bricks: {
       ],
     },
     fn: (i, [a, b, c]) => a ? b : c,
-    to_code: () => {},
+    to_code: (brick, o) => `(${o.brick_to_code(brick.inputs[0])} ? ${o.brick_to_code(brick.inputs[1])} : ${o.brick_to_code(brick.inputs[2])})`,
   },
   operator_compare: {
     brick_def: {
@@ -270,7 +277,10 @@ const bricks: {
     fn: (interpreter: Interpreter, [a, operator, b]) => {
       return boolean_operator_id_to_fn[operator](a, b);
     },
-    to_code: () => {},
+    to_code: (brick, o) => {
+      const operator_id_to_str = ['&', '|', '^', '|', '<<', '>>'];
+      return `((${o.brick_to_code(brick.inputs[0])}) ${operator_id_to_str[brick.inputs[2].computed]} (${o.brick_to_code(brick.inputs[2])}))`;
+    },
   },
   operator_not: {
     brick_def: {
@@ -292,7 +302,7 @@ const bricks: {
       ],
     },
     fn: (i, [value]) => !value,
-    to_code: () => {},
+    to_code: (brick, o) => `(!${o.brick_to_code(brick.inputs[0])})`,
   },
 };
 

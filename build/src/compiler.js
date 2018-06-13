@@ -109,7 +109,7 @@ export default (root_bricks, optimizer_options = {
     is_repeat: (b) => b.type === 'control_repeat_n_times' || b.type === 'control_repeat_while',
 }) => {
     optimizer_opt = optimizer_options;
-    optimizer_opt.brick_to_code = (b) => optimizer_opt.type_to_code[b.type](b, optimizer_opt);
+    optimizer_opt.brick_to_code = (b) => b ? optimizer_opt.type_to_code[b.type](b, optimizer_opt) : '';
     compiler_opt = compiler_options;
     const roots = root_bricks.filter(i => i.ui.show_hat).map(i => clean_up(i));
     return {

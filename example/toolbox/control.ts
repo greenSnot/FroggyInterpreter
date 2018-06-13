@@ -102,18 +102,20 @@ const bricks: {
     to_code: (brick, o) => {
       return `
         ${brick.parts.map((part, i) => {
-          const condition = () => o.brick_to_code(part.inputs[i]);
+          if (i !== 0 && i === brick.parts.length - 1) {
+            return '';
+          }
+          const condition = () => o.brick_to_code(part.inputs[0]);
           const body = () => o.brick_to_code(part.next);
           if (i === 0) {
             return `if (${condition()}) {
               ${body()}
             }`;
-          } else if (i !== brick.parts.length - 1) {
+          } else {
             return `else ${part.inputs.length ? `if (${condition()})` : `` } {
               ${body()}
             }`;
           }
-          return '';
         }).join('')}
         ${o.brick_to_code(brick.next)}
       `;
@@ -228,7 +230,12 @@ const bricks: {
       },
       'control_repeat_n_times#end_repeat': () => {},
     },
-    to_code: () => {},
+    to_code: (brick, o) => `
+      for (let $times = (${o.brick_to_code(brick.parts[0].inputs[0])}), $i = 0; $i < $times; ++$i) {
+        ${o.brick_to_code(brick.parts[0].next)}
+      }
+      ${o.brick_to_code(brick.next)}
+    `,
   },
   control_repeat_while: {
     brick_def: {
@@ -322,7 +329,9 @@ const bricks: {
       },
       'control_repeat_while#end_repeat': () => {},
     },
-    to_code: () => {},
+    to_code: (brick, o) => `while (${o.brick_to_code(brick.parts[0].inputs[0])}) {
+      ${o.brick_to_code(brick.parts[0].next)}
+    }${o.brick_to_code(brick.next)}`,
   },
   control_break: {
     brick_def: {
@@ -341,7 +350,7 @@ const bricks: {
     fn: (interpreter: Interpreter) => {
       interpreter.break();
     },
-    to_code: () => {},
+    to_code: () => 'break;',
   },
 };
 

@@ -93,7 +93,10 @@ const bricks: {
       }
       return runtime_mgr.get_global_variable(name);
     },
-    to_code: () => {},
+    to_code: (brick, o) => {
+      const name = brick.inputs[0].computed;
+      return o.id_to_is_global_variable[brick.id] ? `(global.${name})` : `(${name})`;
+    },
   },
   data_variable_set: {
     brick_def: {
@@ -132,7 +135,10 @@ const bricks: {
     fn: (interpreter: Interpreter, [variable_name, value]) => {
       interpreter.set_local_variable(variable_name, value) || runtime_mgr.set_global_variable(variable_name, value);
     },
-    to_code: () => {},
+    to_code: (brick, o) => {
+      const name = brick.inputs[0].computed;
+      return `${o.id_to_is_global_variable[brick.id] ? `(global.${name})` : `(${name})`} = (${o.brick_to_code(brick.inputs[1])});${o.brick_to_code(brick.next)}`;
+    },
   },
   data_variable_append: {
     brick_def: {
@@ -175,7 +181,10 @@ const bricks: {
       }
       variable.push(thing);
     },
-    to_code: () => {},
+    to_code: (brick, o) => {
+      const name = brick.inputs[1].computed;
+      return `${o.id_to_is_global_variable[brick.id] ? `(global.${name})` : `(${name})`}.push(${o.brick_to_code(brick.inputs[0])});${o.brick_to_code(brick.next)}`;
+    },
   },
   data_variable_get_nth: {
     brick_def: {
@@ -224,7 +233,10 @@ const bricks: {
       }
       return variable[n];
     },
-    to_code: () => {},
+    to_code: (brick, o) => {
+      const name = brick.inputs[1].computed;
+      return `${o.id_to_is_global_variable[brick.id] ? `(global.${name})` : `(${name})`}[${o.brick_to_code(brick.inputs[0])}]`;
+    },
   },
   data_variable_remove_nth: {
     brick_def: {
@@ -273,7 +285,10 @@ const bricks: {
       }
       variable.splice(n, 1);
     },
-    to_code: () => {},
+    to_code: (brick, o) => {
+      const name = brick.inputs[1].computed;
+      return `${o.id_to_is_global_variable[brick.id] ? `(global.${name})` : `(${name})`}.splice(${o.brick_to_code(brick.inputs[0])}, 1);${o.brick_to_code(brick.next)}`;
+    },
   },
   data_variable_set_nth: {
     brick_def: {
@@ -331,7 +346,10 @@ const bricks: {
       }
       variable[n] = thing;
     },
-    to_code: () => {},
+    to_code: (brick, o) => {
+      const name = brick.inputs[1].computed;
+      return `${o.id_to_is_global_variable[brick.id] ? `(global.${name})` : `(${name})`}[${o.brick_to_code(brick.inputs[0])}] = (${o.brick_to_code(brick.inputs[2])});${o.brick_to_code(brick.next)}`;
+    },
   },
   data_variable_length_of: {
     brick_def: {
@@ -365,7 +383,10 @@ const bricks: {
       }
       return variable.length;
     },
-    to_code: () => {},
+    to_code: (brick, o) => {
+      const name = brick.inputs[0].computed;
+      return `(${o.id_to_is_global_variable[brick.id] ? `(global.${name})` : `(${name})`}.length)`;
+    },
   },
   data_variable_pop: {
     brick_def: {
@@ -399,7 +420,10 @@ const bricks: {
       }
       return variable.pop();
     },
-    to_code: () => {},
+    to_code: (brick, o) => {
+      const name = brick.inputs[0].computed;
+      return `(${o.id_to_is_global_variable[brick.id] ? `(global.${name})` : `(${name})`}.pop())`;
+    },
   },
   data_variable_declare_local: {
     brick_def: {
@@ -429,7 +453,10 @@ const bricks: {
     fn: (i: Interpreter, [name]) => {
       i.declare_local_variable(name);
     },
-    to_code: () => {},
+    to_code: (brick, o) => {
+      const name = brick.inputs[0].computed;
+      return `let ${o.id_to_is_global_variable[brick.id] ? `global.${name}` : `${name}`};${o.brick_to_code(brick.next)}`;
+    },
   },
 };
 
