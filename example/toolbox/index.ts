@@ -75,7 +75,7 @@ export const bricks_fn = Object.keys(bricks_bundle).reduce(
   {},
 );
 
-export const bricks_to_code_fn = Object.keys(bricks_bundle).reduce(
+export const type_to_code = Object.keys(bricks_bundle).reduce(
   (m, category) => {
     const bundles = bricks_bundle[category];
     Object.keys(bundles).forEach(i => {
@@ -90,7 +90,7 @@ export const bricks_to_code_fn = Object.keys(bricks_bundle).reduce(
   },
   {},
 );
-console.log(bricks_to_code_fn);
+console.log(type_to_code);
 
 export const toolbox = {
   categories: init_categories(map_child(categories, 'bricks')),

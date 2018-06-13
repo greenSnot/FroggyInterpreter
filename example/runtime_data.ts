@@ -92,3 +92,11 @@ export function get_global_variable(variable_name) {
 export function set_global_variable(variable_name, value) {
   global_variables[variable_name] = value;
 }
+
+export function get_global_variables() {
+  return global_variables;
+}
+
+export function set_global_variables(g) {
+  global_variables = g;
+}

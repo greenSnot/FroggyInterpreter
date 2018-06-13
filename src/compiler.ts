@@ -15,7 +15,7 @@ type CompilerOpt = {
 };
 
 let compiler_opt;
-let type_to_code;
+let optimizer_opt;
 export const clean_up = (brick) => {
   const do_clean_up = (b, prev: string, parent = undefined) => {
     if (compiler_opt.needs_ignore(b)) {
@@ -100,38 +100,47 @@ export const optimize = (procedures) => {
     if (has_blocking_brick) {
       return;
     }
-    console.log(id_to_is_global_variable);
-    brick.optimized_fn = new Function('global', `'use strict';return ${type_to_code[brick.type](brick, type_to_code)}`);
+    optimizer_opt.id_to_is_global_variable = id_to_is_global_variable;
+    (new Function('global', `${optimizer_opt.brick_to_code(brick)}`))(optimizer_opt.global_variables);
+    brick.optimized_fn = optimizer_opt.global_variables[`$procedure_${brick.procedure_name}`];
     console.log(brick.optimized_fn);
   });
   return procedures;
 };
 
-export default (root_bricks, to_code = {}, opt: CompilerOpt = {
-  is_procedure_def: (b) => b.type === 'procedure_def',
-  is_declare_local_variable: (b) => b.type === 'data_variable_declare_local',
-  is_blocking_brick: (b) => b.type === 'control_wait',
-  is_atmoic: (b) => (
-    b.type === 'atomic_boolean' ||
-    b.type === 'atomic_dropdown' ||
-    b.type === 'atomic_input_string' ||
-    b.type === 'atomic_input_number'),
-  needs_ignore: (b) => (
-    b.type === 'atomic_button' ||
-    b.type === 'atomic_text'
-  ),
-  is_param: (b) => b.type === 'atomic_param',
-  is_container: (b) => b.type === 'container',
-  is_procedure_call: (b) => b.type === 'procedure' || b.type === 'procedure_with_output',
-  is_repeat: (b) => b.type === 'control_repeat_n_times' || b.type === 'control_repeat_while',
-}) => {
-  type_to_code = to_code;
-  compiler_opt = opt;
+export default (
+  root_bricks,
+  optimizer_options = {
+    global_variables: {},
+    type_to_code: {},
+  },
+  compiler_options: CompilerOpt = {
+    is_procedure_def: (b) => b.type === 'procedure_def',
+    is_declare_local_variable: (b) => b.type === 'data_variable_declare_local',
+    is_blocking_brick: (b) => b.type === 'control_wait',
+    is_atmoic: (b) => (
+      b.type === 'atomic_boolean' ||
+      b.type === 'atomic_dropdown' ||
+      b.type === 'atomic_input_string' ||
+      b.type === 'atomic_input_number'),
+    needs_ignore: (b) => (
+      b.type === 'atomic_button' ||
+      b.type === 'atomic_text'
+    ),
+    is_param: (b) => b.type === 'atomic_param',
+    is_container: (b) => b.type === 'container',
+    is_procedure_call: (b) => b.type === 'procedure' || b.type === 'procedure_with_output',
+    is_repeat: (b) => b.type === 'control_repeat_n_times' || b.type === 'control_repeat_while',
+  },
+) => {
+  optimizer_opt = optimizer_options;
+  optimizer_opt.brick_to_code = (b) => optimizer_opt.type_to_code[b.type](b, optimizer_opt);
+  compiler_opt = compiler_options;
   const roots: RuntimeBrick[] = root_bricks.filter(i => i.ui.show_hat).map(i => clean_up(i));
   return {
-    procedures: optimize(roots.filter(i => opt.is_procedure_def(i)).map(i => {
+    procedures: optimize(roots.filter(i => compiler_options.is_procedure_def(i)).map(i => {
       i.procedure_name = i.inputs[0].computed;
-      i.params = i.inputs.filter(j => opt.is_param(j)).map(j => j.computed);
+      i.params = i.inputs.filter(j => compiler_options.is_param(j)).map(j => j.computed);
       return i;
     }).reduce(
       (m, j) => {
@@ -140,6 +149,6 @@ export default (root_bricks, to_code = {}, opt: CompilerOpt = {
       },
       {},
     )),
-    root_bricks: roots.filter(i => !opt.is_procedure_def(i)),
+    root_bricks: roots.filter(i => !compiler_options.is_procedure_def(i)),
   };
 };

@@ -20,7 +20,7 @@ const bricks: {
       },
     },
     fn: () => {},
-    to_code: () => {},
+    to_code: (brick) => brick.computed.toString(),
   },
   atomic_input_number: {
     brick_def: {
@@ -32,7 +32,7 @@ const bricks: {
       },
     },
     fn: () => {},
-    to_code: () => {},
+    to_code: (brick) => brick.computed.toString(),
   },
   atomic_input_string: {
     brick_def: {
@@ -44,7 +44,7 @@ const bricks: {
       },
     },
     fn: () => { },
-    to_code: () => {},
+    to_code: (brick) => `'${brick.computed}'`,
   },
   data_empty_array: {
     brick_def: {
@@ -59,7 +59,7 @@ const bricks: {
       is_root: true,
     },
     fn: () => ([]),
-    to_code: () => {},
+    to_code: () => '[]',
   },
   data_variable_get: {
     brick_def: {

@@ -7,7 +7,7 @@ injectTapEventPlugin();
 import { Brick, Workspace } from 'froggy';
 import { compile, Interpreter } from 'froggy-interpreter';
 
-import { atomic_button_fns, atomic_dropdown_menu, bricks_fn, bricks_to_code_fn, toolbox } from './toolbox';
+import { atomic_button_fns, atomic_dropdown_menu, bricks_fn, toolbox, type_to_code } from './toolbox';
 
 import * as runtime_mgr from './runtime_mgr';
 
@@ -57,11 +57,15 @@ class Demo extends React.Component<Props, State> {
         onClick={() => {
           const running = !this.state.running;
           if (running) {
-            const compiled_bricks = compile(this.state.root_bricks, bricks_to_code_fn);
+            const global_variables = {};
+            const compiled_bricks = compile(this.state.root_bricks, {
+              global_variables,
+              type_to_code,
+            });
             console.log(compiled_bricks);
 
             runtime_mgr.init(bricks_fn, compiled_bricks.procedures, compiled_bricks.root_bricks);
-            runtime_mgr.start();
+            runtime_mgr.start(() => runtime_mgr.set_global_variables(global_variables));
           } else {
             runtime_mgr.stop();
           }

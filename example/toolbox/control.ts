@@ -99,7 +99,25 @@ const bricks: {
       },
       'control_if#end_if': () => {},
     },
-    to_code: () => {},
+    to_code: (brick, o) => {
+      return `
+        ${brick.parts.map((part, i) => {
+          const condition = () => o.brick_to_code(part.inputs[i]);
+          const body = () => o.brick_to_code(part.next);
+          if (i === 0) {
+            return `if (${condition()}) {
+              ${body()}
+            }`;
+          } else if (i !== brick.parts.length - 1) {
+            return `else ${part.inputs.length ? `if (${condition()})` : `` } {
+              ${body()}
+            }`;
+          }
+          return '';
+        }).join('')}
+        ${o.brick_to_code(brick.next)}
+      `;
+    },
   },
   control_wait: {
     brick_def: {

@@ -73,7 +73,15 @@ const bricks: {
     fn: (interpreter: Interpreter, [a, operator, b]) => {
       return num_operator_id_to_fn[operator](a, b);
     },
-    to_code: () => {},
+    to_code: (brick, o) => {
+      const operator_id_to_str = ['+', '-', '*', '/', ',', '%'];
+      const operator_id = brick.inputs[1].computed;
+      const res = `(${o.brick_to_code(brick.inputs[0])} ${operator_id_to_str[operator_id]} ${o.brick_to_code(brick.inputs[2])})`;
+      if (operator_id === 4) {
+        return `(Math.pow${res})`;
+      }
+      return res;
+    },
   },
   operator_math: {
     brick_def: {
@@ -220,7 +228,12 @@ const bricks: {
     fn: (interpreter: Interpreter, [a, operator, b]) => {
       return compare_operator_id_to_fn[operator](a, b);
     },
-    to_code: () => {},
+    to_code: (brick, o) => {
+      const operator_id_to_str = ['<', '<=', '===', '>', '>='];
+      const operator_id = brick.inputs[1].computed;
+      const res = `(${o.brick_to_code(brick.inputs[0])} ${operator_id_to_str[operator_id]} ${o.brick_to_code(brick.inputs[2])})`;
+      return res;
+    },
   },
   operator_boolean: {
     brick_def: {

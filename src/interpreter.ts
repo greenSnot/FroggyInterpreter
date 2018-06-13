@@ -17,6 +17,7 @@ export type Brick = {
   next: Brick,
   computed: any,
 
+  optimized_fn?: Function,
   params?: string[],
   procedure_name?: string,
   is_procedure_def?: boolean,
