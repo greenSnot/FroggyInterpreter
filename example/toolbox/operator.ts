@@ -22,6 +22,13 @@ const math_operator_id_to_fn = [
   a => Math.floor(a),
   a => Math.ceil(a),
   a => Math.sqrt(a),
+  a => Math.sin(a),
+  a => Math.cos(a),
+  a => Math.tan(a),
+  a => Math.asin(a),
+  a => Math.acos(a),
+  a => Math.atan(a),
+  a => Math.log(a),
 ];
 const boolean_operator_id_to_fn = [
   (a, b) => a & b,
@@ -115,7 +122,7 @@ const bricks: {
       return math_operator_id_to_fn[operator](a);
     },
     to_code: (brick, o) => {
-      const operator_id_to_str = ['abs', 'round', 'floor', 'ceil', 'sqrt'];
+      const operator_id_to_str = ['abs', 'round', 'floor', 'ceil', 'sqrt', 'sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'log'];
       return `(Math.${operator_id_to_str[brick.inputs[0].computed]}(${o.brick_to_code(brick.inputs[1])}))`;
     },
   },
@@ -335,8 +342,7 @@ const atomic_dropdown_menu = {
     asin: 8,
     acos: 9,
     atan: 10,
-    ln: 11,
-    log: 12,
+    log: 11,
   },
   operator_boolean_dropdown: {
     'and': 0,
