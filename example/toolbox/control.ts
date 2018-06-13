@@ -8,6 +8,7 @@ const bricks: {
     brick_def: Brick,
     child_fns?: {[type: string]: Function},
     fn: Function,
+    to_code: Function,
   },
 } = {
   control_if: {
@@ -98,6 +99,7 @@ const bricks: {
       },
       'control_if#end_if': () => {},
     },
+    to_code: () => {},
   },
   control_wait: {
     brick_def: {
@@ -133,6 +135,7 @@ const bricks: {
     fn: (interpreter: Interpreter, [secs]) => {
       interpreter.sleep(secs);
     },
+    to_code: () => {},
   },
   control_repeat_n_times: {
     brick_def: {
@@ -207,6 +210,7 @@ const bricks: {
       },
       'control_repeat_n_times#end_repeat': () => {},
     },
+    to_code: () => {},
   },
   control_repeat_while: {
     brick_def: {
@@ -300,6 +304,7 @@ const bricks: {
       },
       'control_repeat_while#end_repeat': () => {},
     },
+    to_code: () => {},
   },
   control_break: {
     brick_def: {
@@ -318,6 +323,7 @@ const bricks: {
     fn: (interpreter: Interpreter) => {
       interpreter.break();
     },
+    to_code: () => {},
   },
 };
 

@@ -8,6 +8,8 @@ const bricks: {
     brick_def: Brick,
     child_fns?: {[type: string]: Function},
     fn: Function,
+    to_code: Function,
+    child_to_code?: {[type: string]: Function},
   },
 } = {
   procedure_def: {
@@ -80,6 +82,12 @@ const bricks: {
         return interpreter.get_params()[interpreter.self.computed];
       },
     },
+    child_to_code: {
+      procedure: () => {},
+      procedure_with_output: () => {},
+      procedure_param: () => {},
+    },
+    to_code: () => {},
   },
   procedure_return: {
     brick_def: {
@@ -98,6 +106,7 @@ const bricks: {
     fn: (interpreter: Interpreter, [res]) => {
       interpreter.procedure_return(res);
     },
+    to_code: () => {},
   },
 };
 

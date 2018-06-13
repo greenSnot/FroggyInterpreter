@@ -35,6 +35,7 @@ const bricks: {
   [type: string]: {
     brick_def: Brick,
     fn: Function,
+    to_code: Function,
   },
 } = {
   operator_number: {
@@ -72,6 +73,7 @@ const bricks: {
     fn: (interpreter: Interpreter, [a, operator, b]) => {
       return num_operator_id_to_fn[operator](a, b);
     },
+    to_code: () => {},
   },
   operator_math: {
     brick_def: {
@@ -104,6 +106,7 @@ const bricks: {
     fn: (interpreter: Interpreter, [operator, a]) => {
       return math_operator_id_to_fn[operator](a);
     },
+    to_code: () => {},
   },
   operator_random: {
     brick_def: {
@@ -136,6 +139,7 @@ const bricks: {
       ],
     },
     fn: (i, [a, b]) => Math.floor(Math.random() * (b - a + 1)) + a,
+    to_code: () => {},
   },
   operator_ternary: {
     brick_def: {
@@ -179,6 +183,7 @@ const bricks: {
       ],
     },
     fn: (i, [a, b, c]) => a ? b : c,
+    to_code: () => {},
   },
   operator_compare: {
     brick_def: {
@@ -215,6 +220,7 @@ const bricks: {
     fn: (interpreter: Interpreter, [a, operator, b]) => {
       return compare_operator_id_to_fn[operator](a, b);
     },
+    to_code: () => {},
   },
   operator_boolean: {
     brick_def: {
@@ -251,6 +257,7 @@ const bricks: {
     fn: (interpreter: Interpreter, [a, operator, b]) => {
       return boolean_operator_id_to_fn[operator](a, b);
     },
+    to_code: () => {},
   },
   operator_not: {
     brick_def: {
@@ -272,6 +279,7 @@ const bricks: {
       ],
     },
     fn: (i, [value]) => !value,
+    to_code: () => {},
   },
 };
 

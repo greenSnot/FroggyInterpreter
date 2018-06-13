@@ -5,6 +5,7 @@ const bricks: {
     brick_def: Brick,
     child_fns?: {[type: string]: Function},
     fn: Function,
+    to_code: Function,
   },
 } = {
   log: {
@@ -32,6 +33,7 @@ const bricks: {
       dispatchEvent(e);
       console.log(v);
     },
+    to_code: () => {},
   },
 };
 

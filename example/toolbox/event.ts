@@ -19,6 +19,7 @@ const bricks: {
   [type: string]: {
     brick_def: Brick,
     fn: Function,
+    to_code: Function,
   },
 } = {
   event_run_on_click: {
@@ -52,6 +53,7 @@ const bricks: {
       next: null,
     },
     fn: () => {},
+    to_code: () => {},
   },
   sensor_mouse: {
     brick_def: {
@@ -95,6 +97,7 @@ const bricks: {
       const mouse_status = runtime_mgr.get_mouse_status();
       return mouse_status[mouse === 1 ? 'left' : 'right'] as any === (status === 1 ? MOUSE_STATUS.down : MOUSE_STATUS.up);
     },
+    to_code: () => {},
   },
   sensor_key: {
     brick_def: {
@@ -143,6 +146,7 @@ const bricks: {
       ],
     },
     fn: (i, [key, key_status]) => runtime_mgr.get_key_status(key) === key_status,
+    to_code: () => {},
   },
   event_mouse: {
     brick_def: {
@@ -184,6 +188,7 @@ const bricks: {
         interpreter.sleep(0.01);
       }
     },
+    to_code: () => {},
   },
   event_key: {
     brick_def: {
@@ -245,6 +250,7 @@ const bricks: {
         interpreter.sleep(0.01);
       }
     },
+    to_code: () => {},
   },
 };
 

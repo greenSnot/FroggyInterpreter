@@ -4,8 +4,9 @@ import * as runtime_mgr from '../runtime_mgr';
 
 const bricks: {
   [type: string]: {
-    brick_def: Brick,
+    brick_def: any,
     fn: Function,
+    to_code: Function,
   },
 } = {
   atomic_boolean: {
@@ -19,6 +20,7 @@ const bricks: {
       },
     },
     fn: () => {},
+    to_code: () => {},
   },
   atomic_input_number: {
     brick_def: {
@@ -30,6 +32,7 @@ const bricks: {
       },
     },
     fn: () => {},
+    to_code: () => {},
   },
   atomic_input_string: {
     brick_def: {
@@ -41,6 +44,7 @@ const bricks: {
       },
     },
     fn: () => { },
+    to_code: () => {},
   },
   data_empty_array: {
     brick_def: {
@@ -55,6 +59,7 @@ const bricks: {
       is_root: true,
     },
     fn: () => ([]),
+    to_code: () => {},
   },
   data_variable_get: {
     brick_def: {
@@ -74,6 +79,7 @@ const bricks: {
           type: 'atomic_input_string',
           output: BrickOutput.string,
           is_static: true,
+          is_variable_name: true,
           ui: {
             value: 'x',
           },
@@ -87,6 +93,7 @@ const bricks: {
       }
       return runtime_mgr.get_global_variable(name);
     },
+    to_code: () => {},
   },
   data_variable_set: {
     brick_def: {
@@ -105,6 +112,7 @@ const bricks: {
         inputs: [{
           type: 'atomic_input_string',
           output: BrickOutput.string,
+          is_variable_name: true,
           is_static: true,
           ui: {
             value: 'x',
@@ -124,6 +132,7 @@ const bricks: {
     fn: (interpreter: Interpreter, [variable_name, value]) => {
       interpreter.set_local_variable(variable_name, value) || runtime_mgr.set_global_variable(variable_name, value);
     },
+    to_code: () => {},
   },
   data_variable_append: {
     brick_def: {
@@ -151,6 +160,7 @@ const bricks: {
         inputs: [{
           type: 'atomic_input_string',
           output: BrickOutput.string,
+          is_variable_name: true,
           is_static: true,
           ui: {
             value: 'x',
@@ -165,6 +175,7 @@ const bricks: {
       }
       variable.push(thing);
     },
+    to_code: () => {},
   },
   data_variable_get_nth: {
     brick_def: {
@@ -198,6 +209,7 @@ const bricks: {
         inputs: [{
           type: 'atomic_input_string',
           output: BrickOutput.string,
+          is_variable_name: true,
           is_static: true,
           ui: {
             value: 'x',
@@ -212,6 +224,7 @@ const bricks: {
       }
       return variable[n];
     },
+    to_code: () => {},
   },
   data_variable_remove_nth: {
     brick_def: {
@@ -244,6 +257,7 @@ const bricks: {
         output: BrickOutput.string,
         inputs: [{
           type: 'atomic_input_string',
+          is_variable_name: true,
           output: BrickOutput.string,
           is_static: true,
           ui: {
@@ -259,6 +273,7 @@ const bricks: {
       }
       variable.splice(n, 1);
     },
+    to_code: () => {},
   },
   data_variable_set_nth: {
     brick_def: {
@@ -291,6 +306,7 @@ const bricks: {
         output: BrickOutput.string,
         inputs: [{
           type: 'atomic_input_string',
+          is_variable_name: true,
           output: BrickOutput.string,
           is_static: true,
           ui: {
@@ -315,6 +331,7 @@ const bricks: {
       }
       variable[n] = thing;
     },
+    to_code: () => {},
   },
   data_variable_length_of: {
     brick_def: {
@@ -333,6 +350,7 @@ const bricks: {
         inputs: [{
           type: 'atomic_input_string',
           output: BrickOutput.string,
+          is_variable_name: true,
           is_static: true,
           ui: {
             value: 'x',
@@ -347,6 +365,7 @@ const bricks: {
       }
       return variable.length;
     },
+    to_code: () => {},
   },
   data_variable_pop: {
     brick_def: {
@@ -365,6 +384,7 @@ const bricks: {
         inputs: [{
           type: 'atomic_input_string',
           output: BrickOutput.string,
+          is_variable_name: true,
           is_static: true,
           ui: {
             value: 'x',
@@ -379,6 +399,7 @@ const bricks: {
       }
       return variable.pop();
     },
+    to_code: () => {},
   },
   data_variable_declare_local: {
     brick_def: {
@@ -397,6 +418,7 @@ const bricks: {
         inputs: [{
           type: 'atomic_input_string',
           output: BrickOutput.string,
+          is_variable_name: true,
           is_static: true,
           ui: {
             value: 'x',
@@ -407,6 +429,7 @@ const bricks: {
     fn: (i: Interpreter, [name]) => {
       i.declare_local_variable(name);
     },
+    to_code: () => {},
   },
 };
 

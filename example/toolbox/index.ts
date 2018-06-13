@@ -75,6 +75,23 @@ export const bricks_fn = Object.keys(bricks_bundle).reduce(
   {},
 );
 
+export const bricks_to_code_fn = Object.keys(bricks_bundle).reduce(
+  (m, category) => {
+    const bundles = bricks_bundle[category];
+    Object.keys(bundles).forEach(i => {
+      m[i] = bundles[i].to_code;
+      if (bundles[i].child_to_code) {
+        Object.keys(bundles[i].child_to_code).forEach(j => {
+          m[j] = bundles[i].child_to_code[j];
+        });
+      }
+    });
+    return m;
+  },
+  {},
+);
+console.log(bricks_to_code_fn);
+
 export const toolbox = {
   categories: init_categories(map_child(categories, 'bricks')),
   activeCategory: 'data',

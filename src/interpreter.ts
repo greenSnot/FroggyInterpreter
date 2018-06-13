@@ -7,6 +7,7 @@ enum Status {
 }
 export type Brick = {
   id: BrickId,
+  parent: BrickId,
   type: string,
   is_atomic: boolean,
   output: BrickOutput,
@@ -20,6 +21,7 @@ export type Brick = {
   procedure_name?: string,
   is_procedure_def?: boolean,
   is_procedure_call?: boolean,
+  is_variable_name?: boolean,
 };
 
 type BrickRuntimeData = {
