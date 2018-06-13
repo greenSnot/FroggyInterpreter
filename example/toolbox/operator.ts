@@ -153,8 +153,8 @@ const bricks: {
     to_code: (brick, o) => `(() => {
       let $a = (${o.brick_to_code(brick.inputs[0])});
       let $b = (${o.brick_to_code(brick.inputs[1])});
-      Math.floor(Math.random() * ($b - $a + 1)) + $a);
-    }()`,
+      return Math.floor(Math.random() * ($b - $a + 1)) + $a;
+    })()`,
   },
   operator_ternary: {
     brick_def: {
