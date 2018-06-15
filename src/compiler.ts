@@ -48,8 +48,8 @@ export const clean_up = (brick) => {
   return root_brick;
 };
 
-export const optimize = (procedures) => {
-  const compute_global_variables = (id_to_is_global_variable, brick, func) => {
+export const optimize = ({procedures, events}) => {
+  const compute_global_variables = (brick, func?) => {
     const visited = {};
     const id_to_data = {};
     const local_variable_stack = [[{}]];
@@ -58,7 +58,7 @@ export const optimize = (procedures) => {
         return;
       }
       visited[b.id] = true;
-      fn(b);
+      fn && fn(b);
       id_to_data[b.id] = b;
       if (compiler_opt.is_declare_local_variable(b)) {
         const stack = get_last_nth(local_variable_stack, 1);
@@ -69,7 +69,7 @@ export const optimize = (procedures) => {
       if (b.is_variable_name) {
         const stack = get_last_nth(local_variable_stack, 1);
         if (get_last_nth(stack, 1)[b.computed] === undefined) {
-          id_to_is_global_variable[b.parent] = true;
+          id_to_data[b.parent].is_global_variable = true;
         }
       }
       b.inputs.forEach(i => do_for_each(i, fn));
@@ -92,8 +92,7 @@ export const optimize = (procedures) => {
   Object.keys(procedures).forEach(i => {
     const brick = procedures[i];
     let has_blocking_brick = false;
-    const id_to_is_global_variable = {};
-    compute_global_variables(id_to_is_global_variable, brick, (b) => {
+    compute_global_variables(brick, (b) => {
       if (compiler_opt.is_blocking_brick(b)) {
         has_blocking_brick = true;
       }
@@ -101,12 +100,17 @@ export const optimize = (procedures) => {
     if (has_blocking_brick) {
       return;
     }
-    optimizer_opt.id_to_is_global_variable = id_to_is_global_variable;
     (new Function('global', `${optimizer_opt.brick_to_code(brick)}`))(optimizer_opt.global_variables);
     brick.optimized_fn = optimizer_opt.global_variables[`$procedure_${brick.procedure_name}`];
-    console.log(brick.optimized_fn);
+    // console.log(brick.optimized_fn);
   });
-  return procedures;
+
+  // TODO optimize events
+  events.forEach((i) => compute_global_variables(i));
+  return {
+    procedures,
+    events,
+  };
 };
 
 export default (
@@ -138,18 +142,20 @@ export default (
   optimizer_opt.brick_to_code = (b) => b ? optimizer_opt.type_to_code[b.type](b, optimizer_opt) : '';
   compiler_opt = compiler_options;
   const roots: RuntimeBrick[] = root_bricks.filter(i => i.ui.show_hat).map(i => clean_up(i));
-  return {
-    procedures: optimize(roots.filter(i => compiler_options.is_procedure_def(i)).map(i => {
-      i.procedure_name = i.inputs[0].computed;
-      i.params = i.inputs.filter(j => compiler_options.is_param(j)).map(j => j.computed);
-      return i;
-    }).reduce(
-      (m, j) => {
-        m[j.procedure_name] = j;
-        return m;
-      },
-      {},
-    )),
-    root_bricks: roots.filter(i => !compiler_options.is_procedure_def(i)),
-  };
+  const procedures = roots.filter(i => compiler_options.is_procedure_def(i)).map(i => {
+    i.procedure_name = i.inputs[0].computed;
+    i.params = i.inputs.filter(j => compiler_options.is_param(j)).map(j => j.computed);
+    return i;
+  }).reduce(
+    (m, j) => {
+      m[j.procedure_name] = j;
+      return m;
+    },
+    {},
+  );
+  const events = roots.filter(i => !compiler_options.is_procedure_def(i));
+  return optimize({
+    procedures,
+    events,
+  });
 };

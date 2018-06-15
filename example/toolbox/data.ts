@@ -87,15 +87,11 @@ const bricks: {
       }],
     },
     fn: (i: Interpreter, [name]) => {
-      const local = i.get_local_variable(name);
-      if (local !== undefined) {
-        return local;
-      }
-      return runtime_mgr.get_global_variable(name);
+      return i.self.is_global_variable ? runtime_mgr.get_global_variable(name) : i.get_local_variable(name);
     },
     to_code: (brick, o) => {
       const name = brick.inputs[0].computed;
-      return o.id_to_is_global_variable[brick.id] ? `(global.${name})` : `(${name})`;
+      return brick.is_global_variable ? `(global.${name})` : `(${name})`;
     },
   },
   data_variable_set: {
@@ -133,11 +129,11 @@ const bricks: {
       }],
     },
     fn: (interpreter: Interpreter, [variable_name, value]) => {
-      interpreter.set_local_variable(variable_name, value) || runtime_mgr.set_global_variable(variable_name, value);
+      interpreter.self.is_global_variable ? runtime_mgr.set_global_variable(variable_name, value) : interpreter.set_local_variable(variable_name, value);
     },
     to_code: (brick, o) => {
       const name = brick.inputs[0].computed;
-      return `${o.id_to_is_global_variable[brick.id] ? `(global.${name})` : `(${name})`} = (${o.brick_to_code(brick.inputs[1])});${o.brick_to_code(brick.next)}`;
+      return `${brick.is_global_variable ? `(global.${name})` : `(${name})`} = (${o.brick_to_code(brick.inputs[1])});${o.brick_to_code(brick.next)}`;
     },
   },
   data_variable_append: {
@@ -175,15 +171,12 @@ const bricks: {
       }],
     },
     fn: (i: Interpreter, [thing, name]) => {
-      let variable = i.get_local_variable(name);
-      if (variable === undefined) {
-        variable = runtime_mgr.get_global_variable(name);
-      }
-      variable.push(thing);
+      const v = i.self.is_global_variable ? runtime_mgr.get_global_variable(name) : i.get_local_variable(name);
+      v.push(thing);
     },
     to_code: (brick, o) => {
       const name = brick.inputs[1].computed;
-      return `${o.id_to_is_global_variable[brick.id] ? `(global.${name})` : `(${name})`}.push(${o.brick_to_code(brick.inputs[0])});${o.brick_to_code(brick.next)}`;
+      return `${brick.is_global_variable ? `(global.${name})` : `(${name})`}.push(${o.brick_to_code(brick.inputs[0])});${o.brick_to_code(brick.next)}`;
     },
   },
   data_variable_get_nth: {
@@ -227,15 +220,12 @@ const bricks: {
       }],
     },
     fn: (i: Interpreter, [n, name]) => {
-      let variable = i.get_local_variable(name);
-      if (variable === undefined) {
-        variable = runtime_mgr.get_global_variable(name);
-      }
-      return variable[n];
+      const v = i.self.is_global_variable ? runtime_mgr.get_global_variable(name) : i.get_local_variable(name);
+      return v[n];
     },
     to_code: (brick, o) => {
       const name = brick.inputs[1].computed;
-      return `${o.id_to_is_global_variable[brick.id] ? `(global.${name})` : `(${name})`}[${o.brick_to_code(brick.inputs[0])}]`;
+      return `${brick.is_global_variable ? `(global.${name})` : `(${name})`}[${o.brick_to_code(brick.inputs[0])}]`;
     },
   },
   data_variable_remove_nth: {
@@ -279,15 +269,12 @@ const bricks: {
       }],
     },
     fn: (i: Interpreter, [n, name]) => {
-      let variable = i.get_local_variable(name);
-      if (variable === undefined) {
-        variable = runtime_mgr.get_global_variable(name);
-      }
-      variable.splice(n, 1);
+      const v = i.self.is_global_variable ? runtime_mgr.get_global_variable(name) : i.get_local_variable(name);
+      v.splice(n, 1);
     },
     to_code: (brick, o) => {
       const name = brick.inputs[1].computed;
-      return `${o.id_to_is_global_variable[brick.id] ? `(global.${name})` : `(${name})`}.splice(${o.brick_to_code(brick.inputs[0])}, 1);${o.brick_to_code(brick.next)}`;
+      return `${brick.is_global_variable ? `(global.${name})` : `(${name})`}.splice(${o.brick_to_code(brick.inputs[0])}, 1);${o.brick_to_code(brick.next)}`;
     },
   },
   data_variable_set_nth: {
@@ -340,15 +327,12 @@ const bricks: {
       }],
     },
     fn: (i: Interpreter, [n, name, thing]) => {
-      let variable = i.get_local_variable(name);
-      if (variable === undefined) {
-        variable = runtime_mgr.get_global_variable(name);
-      }
-      variable[n] = thing;
+      const v = i.self.is_global_variable ? runtime_mgr.get_global_variable(name) : i.get_local_variable(name);
+      v[n] = thing;
     },
     to_code: (brick, o) => {
       const name = brick.inputs[1].computed;
-      return `${o.id_to_is_global_variable[brick.id] ? `(global.${name})` : `(${name})`}[${o.brick_to_code(brick.inputs[0])}] = (${o.brick_to_code(brick.inputs[2])});${o.brick_to_code(brick.next)}`;
+      return `${brick.is_global_variable ? `(global.${name})` : `(${name})`}[${o.brick_to_code(brick.inputs[0])}] = (${o.brick_to_code(brick.inputs[2])});${o.brick_to_code(brick.next)}`;
     },
   },
   data_variable_length_of: {
@@ -377,15 +361,12 @@ const bricks: {
       }],
     },
     fn: (i: Interpreter, [name]) => {
-      let variable = i.get_local_variable(name);
-      if (variable === undefined) {
-        variable = runtime_mgr.get_global_variable(name);
-      }
-      return variable.length;
+      const v = i.self.is_global_variable ? runtime_mgr.get_global_variable(name) : i.get_local_variable(name);
+      return v.length;
     },
     to_code: (brick, o) => {
       const name = brick.inputs[0].computed;
-      return `(${o.id_to_is_global_variable[brick.id] ? `(global.${name})` : `(${name})`}.length)`;
+      return `(${brick.is_global_variable ? `(global.${name})` : `(${name})`}.length)`;
     },
   },
   data_variable_pop: {
@@ -414,15 +395,12 @@ const bricks: {
       }],
     },
     fn: (i: Interpreter, [name]) => {
-      let variable = i.get_local_variable(name);
-      if (variable === undefined) {
-        variable = runtime_mgr.get_global_variable(name);
-      }
-      return variable.pop();
+      const v = i.self.is_global_variable ? runtime_mgr.get_global_variable(name) : i.get_local_variable(name);
+      return v.pop();
     },
     to_code: (brick, o) => {
       const name = brick.inputs[0].computed;
-      return `(${o.id_to_is_global_variable[brick.id] ? `(global.${name})` : `(${name})`}.pop())`;
+      return `(${brick.is_global_variable ? `(global.${name})` : `(${name})`}.pop())`;
     },
   },
   data_variable_declare_local: {
@@ -455,7 +433,7 @@ const bricks: {
     },
     to_code: (brick, o) => {
       const name = brick.inputs[0].computed;
-      return `let ${o.id_to_is_global_variable[brick.id] ? `global.${name}` : `${name}`};${o.brick_to_code(brick.next)}`;
+      return `let ${brick.is_global_variable ? `global.${name}` : `${name}`};${o.brick_to_code(brick.next)}`;
     },
   },
 };

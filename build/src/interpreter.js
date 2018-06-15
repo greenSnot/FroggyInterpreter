@@ -127,6 +127,7 @@ export class Interpreter {
         }
         catch (e) {
             if (!Interpreter.SIGNAL[e.message]) {
+                console.error(e);
                 throw e;
             }
         }

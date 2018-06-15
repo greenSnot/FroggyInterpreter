@@ -23,6 +23,7 @@ export type Brick = {
   is_procedure_def?: boolean,
   is_procedure_call?: boolean,
   is_variable_name?: boolean,
+  is_global_variable?: boolean,
 };
 
 type BrickRuntimeData = {
@@ -166,6 +167,7 @@ export class Interpreter {
       }
     } catch (e) {
       if (!Interpreter.SIGNAL[e.message]) {
+        console.error(e);
         throw e;
       }
     }

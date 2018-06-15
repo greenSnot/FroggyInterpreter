@@ -66,7 +66,7 @@ class Demo extends React.Component<Props, State> {
             });
             console.log(compiled_bricks);
 
-            runtime_mgr.init(bricks_fn, compiled_bricks.procedures, compiled_bricks.root_bricks);
+            runtime_mgr.init(bricks_fn, compiled_bricks.procedures, compiled_bricks.events);
             runtime_mgr.start(global_variables);
           } else {
             runtime_mgr.stop();

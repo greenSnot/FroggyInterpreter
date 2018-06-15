@@ -36,7 +36,7 @@ const bricks: {
     to_code: (brick, o) => `
       (($v) => {
         const $e = new Event('log');
-        $e.data = v;
+        $e.data = $v;
         dispatchEvent($e);
         console.log($v);
       })(${o.brick_to_code(brick.inputs[0])});

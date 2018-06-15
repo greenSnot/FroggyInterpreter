@@ -46,7 +46,7 @@ const run_test = async () => {
       type_to_code,
     });
 
-    runtime_mgr.init(bricks_fn, compiled_bricks.procedures, compiled_bricks.root_bricks);
+    runtime_mgr.init(bricks_fn, compiled_bricks.procedures, compiled_bricks.events);
     console.time(name);
     runtime_mgr.start(global_variables);
     await new Promise((resolve) => {
