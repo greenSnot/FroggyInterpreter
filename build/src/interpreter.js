@@ -99,7 +99,7 @@ export class Interpreter {
         this.self = this.self.parts[part_index];
         this.skip_on_end = true;
     }
-    step_into_parent() {
+    step_out() {
         this.self = this.pop_call_stack();
         this.skip_on_end = true;
     }
@@ -134,7 +134,7 @@ export class Interpreter {
     }
     procedure_return(res) {
         while (!this.self.is_procedure_call) {
-            this.step_into_parent();
+            this.step_out();
         }
         this.procedure_result = res;
         this.skip_on_end = false;
@@ -149,7 +149,7 @@ export class Interpreter {
     }
     break() {
         while (!this.self.breakable) {
-            this.step_into_parent();
+            this.step_out();
         }
         this.skip_on_end = false;
     }

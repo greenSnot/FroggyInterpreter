@@ -82,14 +82,14 @@ const bricks: {
     child_fns: {
       'control_if#if': (interpreter: Interpreter, [condition]) => {
         if (!condition) {
-          interpreter.step_into_parent();
+          interpreter.step_out();
         } else {
           interpreter.get_parent_brick_runtime_data().done = true;
         }
       },
       'control_if#else_if': (interpreter: Interpreter, [condition]) => {
         if (!condition) {
-          interpreter.step_into_parent();
+          interpreter.step_out();
         } else {
           interpreter.get_parent_brick_runtime_data().done = true;
         }
@@ -224,7 +224,7 @@ const bricks: {
         if (parent_data.evaluation_times === 1) {
           parent_data.times_left = times - 1;
           if (times === 0) {
-            interpreter.step_into_parent();
+            interpreter.step_out();
           }
         }
       },
@@ -324,7 +324,7 @@ const bricks: {
         const parent_data = interpreter.get_parent_brick_runtime_data();
         parent_data.condition = condition;
         if (!condition) {
-          interpreter.step_into_parent();
+          interpreter.step_out();
         }
       },
       'control_repeat_while#end_repeat': () => {},
