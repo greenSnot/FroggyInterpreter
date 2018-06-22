@@ -43,6 +43,7 @@ const bricks: {
     brick_def: Brick,
     fn: Function,
     to_code: Function,
+    child_to_code?: {[type: string]: Function},
   },
 } = {
   operator_number: {
@@ -88,6 +89,11 @@ const bricks: {
         return `(Math.pow${res})`;
       }
       return res;
+    },
+    child_to_code: {
+      atomic_dropdown: (brick) => {
+        return typeof brick.computed === 'string' ? `'${brick.computed}'` : brick.computed;
+      },
     },
   },
   operator_math: {
@@ -162,6 +168,37 @@ const bricks: {
       let $b = (${o.brick_to_code(brick.inputs[1])});
       return Math.floor(Math.random() * ($b - $a + 1)) + $a;
     })()`,
+  },
+  operator_concat_string: {
+    brick_def: {
+      type: 'operator_concat_string',
+      output: BrickOutput.string,
+      is_root: true,
+      inputs: [
+        {
+          type: 'container',
+          output: BrickOutput.string,
+          inputs: [],
+        },
+        {
+          type: 'atomic_text',
+          ui: {
+            value: 'concat',
+          },
+        },
+        {
+          type: 'container',
+          output: BrickOutput.string,
+          inputs: [],
+        },
+      ],
+    },
+    fn: (interpreter: Interpreter, [a, b]) => {
+      return a + b;
+    },
+    to_code: (brick, o) => {
+      return `(${o.brick_to_code(brick.inputs[0])} + ${o.brick_to_code(brick.inputs[1])})`;
+    },
   },
   operator_ternary: {
     brick_def: {
