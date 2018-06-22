@@ -1,4 +1,16 @@
-import { Events, Listener, ListenerStatus } from './runtime_type';
+export enum ListenerStatus {
+  idle,
+  running,
+}
+
+export type Listener = {
+  status: ListenerStatus,
+  fn: Function,
+};
+
+export type Events = {
+  [event_name: string]: Listener[],
+};
 
 let global_variables = {};
 
