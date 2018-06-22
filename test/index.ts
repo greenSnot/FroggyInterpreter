@@ -1,11 +1,12 @@
 const fs = require('fs');
 const events = require('events');
 const path = require('path');
-import { bricks_fn, toolbox, type_to_code } from '../example/toolbox';
+import { toolbox, type_to_code } from '../example/toolbox';
 
 import { compile, Interpreter } from 'froggy-interpreter';
 
 import * as runtime_mgr from '../example/runtime_mgr';
+import { symlinkSync } from 'fs';
 
 const event_emitter = new events.EventEmitter();
 
@@ -23,9 +24,15 @@ global['document'] = {
   addEventListener: () => {},
   removeEventListener: () => {},
 };
+
+let done_flag = false;
 global['Event'] = class Event {name; constructor(name) { this.name = name; }};
 global['dispatchEvent'] = (e) => {
-  outputs.push(e.data);
+  if (e.name !== 'finished') {
+    outputs.push(e.data);
+  } else {
+    done_flag = true;
+  }
   event_emitter.emit(e.name);
 };
 global['requestAnimationFrame'] = (f) => setTimeout(f, 1);
@@ -46,15 +53,19 @@ const run_test = async () => {
       type_to_code,
     });
 
-    runtime_mgr.init(bricks_fn, compiled_bricks.procedures, compiled_bricks.events);
     console.time(name);
+    done_flag = false;
     runtime_mgr.start(global_variables);
-    await new Promise((resolve) => {
-      event_emitter.once('finished', () => {
-        console.timeEnd(name);
-        resolve();
+    if (!done_flag) {
+      await new Promise((resolve) => {
+        event_emitter.once('finished', () => {
+          console.timeEnd(name);
+          resolve();
+        });
       });
-    });
+    } else {
+      console.timeEnd(name);
+    }
     for (let i = 0; i < outputs.length; ++i) {
       if (outputs[i] !== test_name_to_result[name][i]) {
         if (outputs[i] === undefined && test_name_to_result[name][i] === undefined) {
@@ -65,6 +76,7 @@ const run_test = async () => {
       }
     }
   }
+  process.exit(0);
 };
 
 run_test();

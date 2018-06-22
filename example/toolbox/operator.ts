@@ -41,7 +41,6 @@ const boolean_operator_id_to_fn = [
 const bricks: {
   [type: string]: {
     brick_def: Brick,
-    fn: Function,
     to_code: Function,
     child_to_code?: {[type: string]: Function},
   },
@@ -77,9 +76,6 @@ const bricks: {
           inputs: [],
         },
       ],
-    },
-    fn: (interpreter: Interpreter, [a, operator, b]) => {
-      return num_operator_id_to_fn[operator](a, b);
     },
     to_code: (brick, o) => {
       const operator_id_to_str = ['+', '-', '*', '/', ',', '%'];
@@ -124,9 +120,6 @@ const bricks: {
         },
       ],
     },
-    fn: (interpreter: Interpreter, [operator, a]) => {
-      return math_operator_id_to_fn[operator](a);
-    },
     to_code: (brick, o) => {
       const operator_id_to_str = ['abs', 'round', 'floor', 'ceil', 'sqrt', 'sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'log'];
       return `(Math.${operator_id_to_str[brick.inputs[0].computed]}(${o.brick_to_code(brick.inputs[1])}))`;
@@ -162,7 +155,6 @@ const bricks: {
         },
       ],
     },
-    fn: (i, [a, b]) => Math.floor(Math.random() * (b - a + 1)) + a,
     to_code: (brick, o) => `(() => {
       let $a = (${o.brick_to_code(brick.inputs[0])});
       let $b = (${o.brick_to_code(brick.inputs[1])});
@@ -192,9 +184,6 @@ const bricks: {
           inputs: [],
         },
       ],
-    },
-    fn: (interpreter: Interpreter, [a, b]) => {
-      return a + b;
     },
     to_code: (brick, o) => {
       return `(${o.brick_to_code(brick.inputs[0])} + ${o.brick_to_code(brick.inputs[1])})`;
@@ -241,7 +230,6 @@ const bricks: {
         },
       ],
     },
-    fn: (i, [a, b, c]) => a ? b : c,
     to_code: (brick, o) => `(${o.brick_to_code(brick.inputs[0])} ? ${o.brick_to_code(brick.inputs[1])} : ${o.brick_to_code(brick.inputs[2])})`,
   },
   operator_compare: {
@@ -275,9 +263,6 @@ const bricks: {
           inputs: [],
         },
       ],
-    },
-    fn: (interpreter: Interpreter, [a, operator, b]) => {
-      return compare_operator_id_to_fn[operator](a, b);
     },
     to_code: (brick, o) => {
       const operator_id_to_str = ['<', '<=', '===', '>', '>='];
@@ -318,9 +303,6 @@ const bricks: {
         },
       ],
     },
-    fn: (interpreter: Interpreter, [a, operator, b]) => {
-      return boolean_operator_id_to_fn[operator](a, b);
-    },
     to_code: (brick, o) => {
       const operator_id_to_str = ['&', '|', '^', '|', '<<', '>>'];
       return `((${o.brick_to_code(brick.inputs[0])}) ${operator_id_to_str[brick.inputs[2].computed]} (${o.brick_to_code(brick.inputs[2])}))`;
@@ -345,7 +327,6 @@ const bricks: {
         },
       ],
     },
-    fn: (i, [value]) => !value,
     to_code: (brick, o) => `(!${o.brick_to_code(brick.inputs[0])})`,
   },
 };

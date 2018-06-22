@@ -1,16 +1,17 @@
-import { gen_id, AtomicBrickEnum, BrickId, BrickOutput } from 'froggy';
 import { get_last_nth, set_last_nth } from './util';
 
 enum Status {
   IDLE = 0,
   PENDING = 1,
 }
+
+type BrickId = string;
 export type Brick = {
   id: BrickId,
   parent: BrickId,
   type: string,
   is_atomic: boolean,
-  output: BrickOutput,
+  output: number,
   parts: Brick[],
   inputs: Brick[],
   breakable: boolean,
@@ -23,7 +24,6 @@ export type Brick = {
   is_procedure_def?: boolean,
   is_procedure_call?: boolean,
   is_variable_name?: boolean,
-  is_global_variable?: boolean,
 };
 
 type BrickRuntimeData = {

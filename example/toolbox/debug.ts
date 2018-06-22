@@ -4,7 +4,6 @@ const bricks: {
   [type: string]: {
     brick_def: Brick,
     child_fns?: {[type: string]: Function},
-    fn: Function,
     to_code: Function,
   },
 } = {
@@ -27,20 +26,36 @@ const bricks: {
       ],
       next: null,
     },
-    fn: (i, [v]) => {
-      const e = new Event('log');
-      e['data'] = v;
-      dispatchEvent(e);
-      console.log(v);
-    },
-    to_code: (brick, o) => `
+    to_code: (brick, util) => `
       (($v) => {
         const $e = new Event('log');
         $e.data = $v;
         dispatchEvent($e);
         console.log($v);
-      })(${o.brick_to_code(brick.inputs[0])});
-      ${o.brick_to_code(brick.next)}`,
+      })(${util.brick_to_code(brick.inputs[0])});
+      ${util.brick_to_code(brick.next)}`,
+  },
+  done: {
+    brick_def: {
+      type: 'done',
+      is_root: true,
+      inputs: [
+        {
+          type: 'atomic_text',
+          ui: {
+            value: 'debug done',
+          },
+        },
+      ],
+      next: null,
+    },
+    to_code: (brick, util) => `
+      (() => {
+        const $e = new Event('finished');
+        console.log('done');
+        dispatchEvent($e);
+      })();
+      ${util.brick_to_code(brick.next)}`,
   },
 };
 

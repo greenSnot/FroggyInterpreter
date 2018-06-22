@@ -1,6 +1,6 @@
 import { get_last_nth } from './util';
 let compiler_opt;
-let optimizer_opt;
+let util;
 export const clean_up = (brick) => {
     const do_clean_up = (b, prev, parent = undefined) => {
         if (compiler_opt.needs_ignore(b)) {
@@ -32,10 +32,9 @@ export const clean_up = (brick) => {
     const root_brick = do_clean_up(brick, undefined);
     return root_brick;
 };
-export const optimize = ({ procedures, events }) => {
+export const compile = ({ procedures, events }) => {
     const compute_global_variables = (brick, func) => {
         const visited = {};
-        const id_to_data = {};
         const local_variable_stack = [[{}]];
         const do_for_each = (b, fn) => {
             if (visited[b.id]) {
@@ -43,7 +42,6 @@ export const optimize = ({ procedures, events }) => {
             }
             visited[b.id] = true;
             fn && fn(b);
-            id_to_data[b.id] = b;
             if (compiler_opt.is_declare_local_variable(b)) {
                 const stack = get_last_nth(local_variable_stack, 1);
                 get_last_nth(stack, 1)[b.inputs[0].computed] = true;
@@ -53,7 +51,7 @@ export const optimize = ({ procedures, events }) => {
             if (b.is_variable_name) {
                 const stack = get_last_nth(local_variable_stack, 1);
                 if (get_last_nth(stack, 1)[b.computed] === undefined) {
-                    id_to_data[b.parent].is_global_variable = true;
+                    util.is_global_variable[b.parent] = true;
                 }
             }
             b.inputs.forEach(i => do_for_each(i, fn));
@@ -74,27 +72,28 @@ export const optimize = ({ procedures, events }) => {
     };
     Object.keys(procedures).forEach(i => {
         const brick = procedures[i];
-        let has_blocking_brick = false;
         compute_global_variables(brick, (b) => {
             if (compiler_opt.is_blocking_brick(b)) {
-                has_blocking_brick = true;
+                util.has_blocking_brick[i] = true;
             }
         });
-        if (has_blocking_brick) {
-            return;
-        }
-        (new Function('global', `${optimizer_opt.brick_to_code(brick)}`))(optimizer_opt.global_variables);
-        brick.optimized_fn = optimizer_opt.global_variables[`$procedure_${brick.procedure_name}`];
-        // console.log(brick.optimized_fn);
+        (new Function('global', `${util.brick_to_code(brick)}`))(util.global_variables);
+        // console.log(util.global_variables[`$procedure_${brick.procedure_name}`]);
     });
-    // TODO optimize events
-    events.forEach((i) => compute_global_variables(i));
+    events.forEach((i) => {
+        compute_global_variables(i, (b) => {
+            if (compiler_opt.is_blocking_brick(b)) {
+                util.has_blocking_brick[i] = true;
+            }
+        });
+        (new Function('global', `${util.brick_to_code(i)}`))(util.global_variables);
+    });
     return {
         procedures,
         events,
     };
 };
-export default (root_bricks, optimizer_options = {
+export default (root_bricks, u = {
     global_variables: {},
     type_to_code: {},
 }, compiler_options = {
@@ -112,8 +111,12 @@ export default (root_bricks, optimizer_options = {
     is_procedure_call: (b) => b.type === 'procedure' || b.type === 'procedure_with_output',
     is_repeat: (b) => b.type === 'control_repeat_n_times' || b.type === 'control_repeat_while',
 }) => {
-    optimizer_opt = optimizer_options;
-    optimizer_opt.brick_to_code = (b) => b ? optimizer_opt.type_to_code[b.type](b, optimizer_opt) : '';
+    util = {
+        ...u,
+        has_blocking_brick: {},
+        brick_to_code: (b) => b ? util.type_to_code[b.type](b, util) : '',
+        is_global_variable: {},
+    };
     compiler_opt = compiler_options;
     const roots = root_bricks.filter(i => i.ui.show_hat).map(i => clean_up(i));
     const procedures = roots.filter(i => compiler_options.is_procedure_def(i)).map(i => {
@@ -125,7 +128,7 @@ export default (root_bricks, optimizer_options = {
         return m;
     }, {});
     const events = roots.filter(i => !compiler_options.is_procedure_def(i));
-    return optimize({
+    return compile({
         procedures,
         events,
     });
