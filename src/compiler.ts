@@ -33,6 +33,7 @@ export const clean_up = (brick) => {
       parts: b.parts ? b.parts.map(i => do_clean_up(i, undefined, b.id)).filter(i => i) : [],
       inputs: b.inputs ? b.inputs.map(i => do_clean_up(i, undefined, b.id)).filter(i => i) : [],
       next: b.next ? do_clean_up(b.next, b.id) : undefined,
+      root: b.root,
       computed: b.ui && b.ui.value,
       parent,
       is_variable_name: b.is_variable_name,
@@ -49,19 +50,23 @@ export const clean_up = (brick) => {
 };
 
 export const compile = ({procedures, events}) => {
-  const compute_global_variables = (brick, func?) => {
+  let codes = '';
+  const label_global_variables_and_blocking_brick = (brick) => {
     const visited = {};
     const local_variable_stack = [[{}]];
-    const do_for_each = (b, fn) => {
+    const do_for_each = (b) => {
       if (visited[b.id]) {
         return;
       }
       visited[b.id] = true;
-      fn && fn(b);
+
+      if (compiler_opt.is_blocking_brick(b) && compiler_opt.is_procedure_def(brick)) {
+        util.has_blocking_brick[brick.procedure_name] = true;
+      }
       if (compiler_opt.is_declare_local_variable(b)) {
         const stack = get_last_nth(local_variable_stack, 1);
         get_last_nth(stack, 1)[b.inputs[0].computed] = true;
-        b.next && do_for_each(b.next, fn);
+        b.next && do_for_each(b.next);
         return;
       }
       if (b.is_variable_name) {
@@ -70,54 +75,44 @@ export const compile = ({procedures, events}) => {
           util.is_global_variable[b.parent] = true;
         }
       }
-      b.inputs.forEach(i => do_for_each(i, fn));
+      b.inputs.forEach(i => do_for_each(i));
       b.parts.forEach(i => {
         const stack = get_last_nth(local_variable_stack, 1);
         stack.push({...get_last_nth(stack, 1)});
-        do_for_each(i, fn);
+        do_for_each(i);
         stack.pop();
       });
-      b.next && do_for_each(b.next, fn);
+      b.next && do_for_each(b.next);
       if (compiler_opt.is_procedure_call(b)) {
         local_variable_stack.push([{}]);
-        do_for_each(procedures[b.procedure_name], fn);
+        do_for_each(procedures[b.procedure_name]);
         local_variable_stack.pop();
       }
     };
-    do_for_each(brick, func);
+    do_for_each(brick);
   };
 
   Object.keys(procedures).forEach(i => {
     const brick = procedures[i];
-    compute_global_variables(brick, (b) => {
-      if (compiler_opt.is_blocking_brick(b)) {
-        util.has_blocking_brick[i] = true;
-      }
-    });
-    (new Function('global', `${util.brick_to_code(brick)}`))(util.global_variables);
-    // console.log(util.global_variables[`$procedure_${brick.procedure_name}`]);
+    label_global_variables_and_blocking_brick(brick);
+    codes += util.brick_to_code(brick);
   });
 
   events.forEach((i) => {
-    compute_global_variables(i, (b) => {
-      if (compiler_opt.is_blocking_brick(b)) {
-        util.has_blocking_brick[i] = true;
-      }
-    });
-    (new Function('global', `${util.brick_to_code(i)}`))(util.global_variables);
+    label_global_variables_and_blocking_brick(i);
+    codes += util.brick_to_code(i);
   });
+
   return {
     procedures,
+    codes,
     events,
   };
 };
 
 export default (
   root_bricks,
-  u = {
-    global_variables: {},
-    type_to_code: {},
-  },
+  type_to_code,
   compiler_options: CompilerOpt = {
     is_procedure_def: (b) => b.type === 'procedure_def',
     is_declare_local_variable: (b) => b.type === 'data_variable_declare_local',
@@ -138,9 +133,8 @@ export default (
   },
 ) => {
   util = {
-    ...u,
     has_blocking_brick: {},
-    brick_to_code: (b) => b ? util.type_to_code[b.type](b, util) : '',
+    brick_to_code: (b) => b ? type_to_code[b.type](b, util) : '',
     is_global_variable: {},
   };
   compiler_opt = compiler_options;

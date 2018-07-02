@@ -5,7 +5,7 @@ import injectTapEventPlugin from 'react-tap-event-plugin';
 injectTapEventPlugin();
 
 import { Brick, Workspace } from 'froggy';
-import { compile, Interpreter } from 'froggy-interpreter';
+import { compile } from 'froggy-interpreter';
 
 import { atomic_button_fns, atomic_dropdown_menu, toolbox, type_to_code } from './toolbox';
 
@@ -60,12 +60,9 @@ class Demo extends React.Component<Props, State> {
             const global_variables = {
               $runtime_mgr: runtime_mgr,
             };
-            const compiled_bricks = compile(this.state.root_bricks, {
-              global_variables,
-              type_to_code,
-            });
-            console.log(compiled_bricks);
+            const codes = compile(this.state.root_bricks, type_to_code).codes;
 
+            (new Function('global', codes))(global_variables);
             runtime_mgr.start(global_variables);
           } else {
             runtime_mgr.stop();

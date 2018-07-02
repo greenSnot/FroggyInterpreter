@@ -17,6 +17,7 @@ export type Brick = {
   breakable: boolean,
   next: Brick,
   computed: any,
+  root: BrickId,
 
   optimized_fn?: Function,
   params?: string[],

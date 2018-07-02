@@ -48,10 +48,8 @@ const run_test = async () => {
     const global_variables = {
       $runtime_mgr: runtime_mgr,
     };
-    const compiled_bricks = compile(res, {
-      global_variables,
-      type_to_code,
-    });
+    const codes = compile(res, type_to_code).codes;
+    (new Function('global', codes))(global_variables);
 
     console.time(name);
     done_flag = false;
